@@ -1,0 +1,24 @@
+{
+  "name": "sneakerlab",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.7.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=11.0.0"
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter @sneakerlab/web dev",
+    "lint": "pnpm --filter @sneakerlab/web lint",
+    "typecheck": "pnpm --filter @sneakerlab/shared-types typecheck && pnpm --filter @sneakerlab/web typecheck",
+    "test": "pnpm --filter @sneakerlab/web test",
+    "build": "pnpm --filter @sneakerlab/web build",
+    "test:e2e": "pnpm --filter @sneakerlab/web test:e2e",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.9.5"
+  }
+}

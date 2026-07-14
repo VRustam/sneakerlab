@@ -1,0 +1,9 @@
+node_modules/
+.next/
+coverage/
+playwright-report/
+test-results/
+work/
+apps/mobile/.dart_tool/
+apps/mobile/build/
+apps/web/next-env.d.ts
