@@ -1,21 +1,21 @@
-import { EmptyState } from '@/components/states';
-import { PageContainer } from '@/components/page-container';
-import { PageHeader } from '@/components/page-header';
+import type { Metadata } from 'next';
+import { CatalogPageContent } from '@/app/products/catalog-page-content';
+import type { CatalogSearchParams } from '@/lib/catalog/catalog-filters';
 
-export const metadata = { title: 'Products' };
+export const metadata: Metadata = {
+  title: 'Sneaker catalog',
+  description:
+    'Browse active SneakerLab styles by category, size, color, price, and featured status.',
+  openGraph: {
+    title: 'SneakerLab catalog',
+    description: 'Browse active sneaker styles with shareable catalog filters.',
+  },
+};
 
-export default function ProductsPage() {
-  return (
-    <PageContainer className="space-y-10 py-12 sm:py-16">
-      <PageHeader
-        eyebrow="Catalog"
-        title="Find your next pair"
-        description="The Supabase-backed catalog, filters, and product details arrive in Phase 3."
-      />
-      <EmptyState
-        description="Catalog products will appear after the Phase 2 data model is ready."
-        title="The catalog is being prepared"
-      />
-    </PageContainer>
-  );
+interface ProductsPageProps {
+  searchParams: Promise<CatalogSearchParams>;
+}
+
+export default async function ProductsPage({ searchParams }: ProductsPageProps) {
+  return <CatalogPageContent searchParams={await searchParams} />;
 }

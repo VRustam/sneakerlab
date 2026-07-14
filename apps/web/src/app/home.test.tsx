@@ -2,8 +2,8 @@ import { render, screen } from '@testing-library/react';
 import HomePage from '@/app/page';
 
 describe('HomePage', () => {
-  it('presents the SneakerLab value proposition and primary actions', () => {
-    render(<HomePage />);
+  it('presents the SneakerLab value proposition and primary actions', async () => {
+    render(await HomePage());
 
     expect(
       screen.getByRole('heading', { name: 'Explore sneakers from every angle.' }),

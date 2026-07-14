@@ -9,6 +9,12 @@ export const metadata: Metadata = {
     template: '%s | SneakerLab',
   },
   description: 'A portfolio-grade sneaker commerce experience for web and mobile.',
+  openGraph: {
+    title: 'SneakerLab | Modern sneaker commerce',
+    description:
+      'Discover active sneaker styles with thoughtful product detail and responsive filters.',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

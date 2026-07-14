@@ -65,3 +65,22 @@ No test or build result is treated as passed until the listed command completes 
 ## Continuation status
 
 Phase 2's local database gate is complete. Phase 3 can now proceed. The Codex sandbox still cannot directly connect to Docker, so any later database-only validation must be run in the user's Terminal and reported verbatim. The Flutter SDK failure remains a separate Phase 6 validation blocker.
+
+## Phase 3
+
+| Command or check    | Result                   | Notes                                                                                                                                                                                                                                      |
+| ------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm lint`         | passed                   | ESLint completed successfully after the catalog server-page error-boundary refactor.                                                                                                                                                       |
+| `pnpm typecheck`    | passed                   | Shared types and web TypeScript checks completed successfully.                                                                                                                                                                             |
+| `pnpm test`         | passed                   | Vitest: 16 files and 34 tests passed, including filter parsing, query-plan, variant-combination, favorite-path, and catalog-card coverage.                                                                                                 |
+| `pnpm build`        | passed                   | Next.js 16.2.10 Webpack production build completed successfully with the configured local public Supabase variables.                                                                                                                       |
+| `pnpm format:check` | passed                   | Prettier completed successfully after all Phase 3 source changes.                                                                                                                                                                          |
+| `pnpm secret:scan`  | passed                   | No service-role key or obvious secret pattern was found in web/mobile source.                                                                                                                                                              |
+| `git diff --check`  | passed                   | No whitespace errors were reported.                                                                                                                                                                                                        |
+| `pnpm test:e2e`     | blocked by local sandbox | Playwright did not execute any test: the sandbox denied `next start` binding `0.0.0.0:3100` with `listen EPERM`. This is not a passing E2E result. Run the same command in a normal local Terminal to exercise the five catalog scenarios. |
+
+### Phase 3 verification scope
+
+- Server-rendered catalog reads are centralized in a typed repository and always scope public product queries to active products.
+- URL-backed search, category/size/color/price/featured filters, sort order, pagination, clear filters, empty/error/loading states, product cards, product detail, variant availability, anonymous favorite continuation, and user-owned favorite mutations have implementation and unit/component coverage.
+- The Playwright suite covers seeded catalog search, category filter/clear URLs, price sorting, product detail plus an unavailable size, anonymous favorite sign-in continuation, and mobile horizontal overflow. It remains unexecuted because this Codex sandbox blocks the web-server port before the browser launches.
