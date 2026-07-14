@@ -64,3 +64,7 @@ pnpm exec supabase test db
 ```
 
 The reset must apply all three migrations, load the four categories and ten products in `supabase/seed.sql`, and then execute the pgTAP checks. The static migration tests are useful local coverage, but they do not replace this database execution.
+
+## Continuation blocker
+
+Phase 3 is intentionally blocked until Docker Desktop is running and the local Supabase stack can pass the Phase 2 reset/test flow. The Flutter SDK failure remains a separate blocker for Phase 6 validation. No catalog, favorites, cart, order, admin, or mobile integration test has been represented as passing without those required services.
