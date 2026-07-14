@@ -33,6 +33,28 @@ supabase/migrations/     Ordered SQL migrations (Phase 2 onward)
 supabase/tests/          Database and security tests (Phase 2 onward)
 ```
 
-## Data flow to be completed
+## Data flow
 
-Phase 2 will add Supabase schema, RLS, storage policies, deterministic seed data, and generated database types. Phase 3 onward will use typed repositories instead of scattering raw Supabase calls across UI components.
+Phase 2 provides Supabase schema, RLS, storage policies, deterministic seed data, and generated-type-compatible contracts. Phase 3 onward uses typed repositories instead of scattering raw Supabase queries across UI components.
+
+## Phase 2 data and security model
+
+The database is the authority for prices, stock, roles, and orders. Customer clients can read public active catalog data and manage only their own profile, favorites, cart, and order history. They cannot insert an order or its items directly: `create_order_from_cart` derives the caller from `auth.uid()`, locks cart/catalog rows, calculates prices from the database, validates stock, writes immutable snapshots, decrements one consistent stock source, and clears the cart atomically.
+
+```mermaid
+erDiagram
+  PROFILES ||--|| AUTH_USERS : "extends"
+  CATEGORIES ||--o{ PRODUCTS : contains
+  PRODUCTS ||--o{ PRODUCT_IMAGES : has
+  PRODUCTS ||--o{ PRODUCT_VARIANTS : has
+  AUTH_USERS ||--o{ FAVORITES : owns
+  PRODUCTS ||--o{ FAVORITES : saved
+  AUTH_USERS ||--o{ CART_ITEMS : owns
+  PRODUCTS ||--o{ CART_ITEMS : selected
+  PRODUCT_VARIANTS ||--o{ CART_ITEMS : optionally_selected
+  AUTH_USERS ||--o{ ORDERS : places
+  ORDERS ||--o{ ORDER_ITEMS : snapshots
+  PRODUCTS ||--o{ ORDER_ITEMS : references
+```
+
+`public.is_admin()` is a security-definer helper that checks the current authenticated profile without recursive RLS. Profile role changes are blocked by a database trigger unless performed by an administrator or database owner. Storage similarly limits product assets to admins and avatars to the owning user UUID path.

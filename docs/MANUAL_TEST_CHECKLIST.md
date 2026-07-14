@@ -10,3 +10,13 @@ All items are **not tested** until a human performs them in the relevant environ
 - [ ] Web: confirm anonymous users are redirected from `/account` and `/admin`.
 - [ ] Web: after Phase 2, verify that a customer cannot access `/admin` and an admin can.
 - [ ] Mobile: launch the app on Android and iOS after the local Flutter SDK is operational.
+
+## Phase 2 database and storage
+
+- [ ] Start Docker Desktop, then run `pnpm exec supabase start`, `pnpm exec supabase db reset`, and `pnpm exec supabase test db`.
+- [ ] Confirm the local seed contains four categories, ten products, active and inactive catalog fixtures, and variant stock.
+- [ ] Create two customer accounts and confirm each can only read/update their own profile, favorites, cart, and orders.
+- [ ] Assign one admin role through the privileged SQL workflow and confirm a customer cannot alter their own role.
+- [ ] Confirm inactive products and their related assets are not public.
+- [ ] Attempt a direct `orders` insert as a customer; it must be denied. Complete the future checkout RPC path and verify it uses database prices and stock.
+- [ ] Confirm only an admin can upload product assets and each customer can manage only their own avatar path.

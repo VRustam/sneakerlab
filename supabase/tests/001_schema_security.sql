@@ -1,0 +1,29 @@
+begin;
+
+select plan(22);
+
+select ok(exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'profiles'), 'profiles table exists');
+select ok(exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'products'), 'products table exists');
+select ok(exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'cart_items'), 'cart_items table exists');
+select ok(exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'orders'), 'orders table exists');
+select ok(exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'order_items'), 'order_items table exists');
+select ok((select relrowsecurity from pg_class where oid = 'public.profiles'::regclass), 'profiles has RLS enabled');
+select ok((select relrowsecurity from pg_class where oid = 'public.products'::regclass), 'products has RLS enabled');
+select ok((select relrowsecurity from pg_class where oid = 'public.orders'::regclass), 'orders has RLS enabled');
+select ok(exists (select 1 from pg_indexes where schemaname = 'public' and indexname = 'cart_items_unique_logical_line'), 'cart unique logical line index exists');
+select ok(exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'create_order_from_cart'), 'secure order RPC exists');
+select ok(not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'orders' and cmd = 'INSERT' and roles @> array['authenticated']::name[]), 'customers have no direct order insert policy');
+select ok(exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'products' and policyname = 'products_read_active'), 'active product policy exists');
+select ok(exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'cart_items' and policyname = 'cart_items_manage_own'), 'cart ownership policy exists');
+select throws_ok($$insert into public.products (name, slug, price, stock) values ('Bad Price', 'bad-price', -1, 0)$$, '23514', null, 'negative product price is rejected');
+select throws_ok($$insert into public.products (name, slug, price, stock) values ('Bad Stock', 'bad-stock', 1, -1)$$, '23514', null, 'negative product stock is rejected');
+select throws_ok($$insert into public.product_variants (product_id, color_name, size, stock, sku) values ('20000000-0000-0000-0000-000000000001', 'Test', '8', -1, 'NEGATIVE-STOCK')$$, '23514', null, 'negative variant stock is rejected');
+select throws_ok($$insert into public.categories (name, slug) values ('Duplicate Court', 'court')$$, '23505', null, 'duplicate category slug is rejected');
+select throws_ok($$insert into public.product_variants (product_id, color_name, size, stock, sku) values ('20000000-0000-0000-0000-000000000001', 'Probe', '99', 1, 'ATLAS-CLOUD-8')$$, '23505', null, 'duplicate SKU is rejected');
+select ok(exists (select 1 from pg_trigger where tgrelid = 'auth.users'::regclass and tgname = 'auth_user_creates_profile'), 'auth profile trigger exists');
+select ok(exists (select 1 from pg_trigger where tgrelid = 'public.cart_items'::regclass and tgname = 'cart_items_validate_variant'), 'cart variant integrity trigger exists');
+select is((select count(*) from public.categories), 4::bigint, 'seed creates four categories');
+select is((select count(*) from public.products), 10::bigint, 'seed creates ten products');
+
+select * from finish();
+rollback;

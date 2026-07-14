@@ -14,11 +14,13 @@
     "test": "pnpm --filter @sneakerlab/web test",
     "build": "pnpm --filter @sneakerlab/web build",
     "test:e2e": "pnpm --filter @sneakerlab/web test:e2e",
+    "secret:scan": "node scripts/secret-scan.mjs",
     "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "prettier": "^3.9.5"
+    "prettier": "^3.9.5",
+    "supabase": "^2.109.1"
   }
 }

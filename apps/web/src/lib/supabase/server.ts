@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getSupabasePublicConfig } from '@/lib/env';
+import type { Database } from '@/lib/supabase/database.types';
 
 /** Lazily creates a server client; no build-time environment values are required. */
 export async function getSupabaseServerClient() {
@@ -8,7 +9,7 @@ export async function getSupabaseServerClient() {
   if (!config) return null;
 
   const cookieStore = await cookies();
-  return createServerClient(config.url, config.anonKey, {
+  return createServerClient<Database>(config.url, config.anonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

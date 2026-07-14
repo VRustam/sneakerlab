@@ -6,7 +6,7 @@ SneakerLab is being built as a secure demo-commerce platform: customers can disc
 
 ## Current status
 
-Phase 1 is in progress: the monorepo, web shell, authentication interfaces, test foundation, and CI are being established. See [progress](docs/PROGRESS.md) and the truthful [test report](docs/TEST_REPORT.md).
+Phases 1 and 2 are complete: the monorepo, authentication shell, secure Supabase migrations, deterministic seed data, RLS policies, storage policy contract, typed database boundary, tests, and CI are in place. See [progress](docs/PROGRESS.md) and the truthful [test report](docs/TEST_REPORT.md).
 
 ## Stack
 
@@ -50,6 +50,16 @@ pnpm verify
 pnpm test:e2e
 ```
 
+For local Supabase validation, start Docker Desktop first, then run:
+
+```bash
+pnpm exec supabase start
+pnpm exec supabase db reset
+pnpm exec supabase test db
+```
+
+See [Supabase setup](supabase/README.md) for type generation, safe admin assignment, and the storage-policy contract.
+
 For mobile:
 
 ```bash
@@ -72,4 +82,4 @@ flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...
 
 ## Known limitations
 
-This initial phase intentionally does not yet contain a product database, cart, orders, admin CRUD, or 3D viewer. The Flutter SDK must initialize successfully before mobile commands can be validated locally; see the test report for the current environment result.
+The current build intentionally does not yet contain a catalog UI, cart, orders UI, admin CRUD, or 3D viewer. The local Docker daemon and Flutter SDK must be operational before their respective integration checks can run; see the test report for exact current results.

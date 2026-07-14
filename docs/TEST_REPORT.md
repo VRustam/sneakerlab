@@ -37,3 +37,30 @@ Last updated: 2026-07-14
 - Scan for `TODO` and `FIXME` in application source and docs found no critical-flow placeholders.
 
 No test or build result is treated as passed until the listed command completes successfully.
+
+## Phase 2
+
+| Command or check                                     | Result                   | Notes                                                                                                                 |
+| ---------------------------------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `pnpm exec supabase --version`                       | passed                   | Supabase CLI 2.109.1 is installed locally.                                                                            |
+| `docker info --format '{{.ServerVersion}}'`          | blocked by local service | Docker binary exists, but the daemon socket at `/Users/apple/.docker/run/docker.sock` is unavailable.                 |
+| `pnpm exec supabase start`                           | blocked by local service | Supabase CLI could not inspect/start services because Docker Desktop is not running.                                  |
+| `pnpm exec supabase db reset`                        | blocked by local service | Could not apply migrations or seed against a clean local database without the Docker daemon.                          |
+| `supabase/tests/001_schema_security.sql`             | not run                  | pgTAP test file is ready for `supabase test db` once the local stack starts. It is not a passing result.              |
+| `pnpm lint`                                          | passed                   | ESLint completed successfully.                                                                                        |
+| `pnpm typecheck`                                     | passed                   | Shared types and web TypeScript checks completed successfully.                                                        |
+| `pnpm test`                                          | passed                   | Vitest: 9 files and 18 tests passed, including four migration/security contract tests.                                |
+| `pnpm secret:scan`                                   | passed                   | No service-role key or obvious secret pattern was found in web/mobile source.                                         |
+| `pnpm build`                                         | passed                   | Next.js 16.2.10 production build completed successfully.                                                              |
+| `pnpm test:e2e`                                      | blocked by local sandbox | The production server started; Chromium exited before test execution because macOS denied its Mach-port registration. |
+| `flutter pub get`, `flutter analyze`, `flutter test` | blocked by local SDK     | Repeated Phase 1 limitation: the installed Flutter Dart VM crashes during startup.                                    |
+
+### Database validation to run once Docker is available
+
+```bash
+pnpm exec supabase start
+pnpm exec supabase db reset
+pnpm exec supabase test db
+```
+
+The reset must apply all three migrations, load the four categories and ten products in `supabase/seed.sql`, and then execute the pgTAP checks. The static migration tests are useful local coverage, but they do not replace this database execution.
