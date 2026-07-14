@@ -28,3 +28,13 @@ All items are **not tested** until a human performs them in the relevant environ
 - [ ] Confirm the inactive `Archive Sample` seed never appears in the public catalog, category pages, related products, or search.
 - [ ] Open a product detail page and check breadcrumbs, image alternative text, responsive gallery, comparison price, shipping/return disclosures, 3D fallback, related products, and disabled impossible variant combinations.
 - [ ] While signed out, use any heart control and confirm login receives only an internal `next` path. While signed in as two different customers, add and remove favorites and confirm each list remains private.
+
+## Phase 4 cart, checkout, and orders
+
+- [ ] As a guest, add a selected variant from a product page, change quantity, remove it, refresh `/cart`, and confirm the local browser cart persists. Sign in and use the offered merge; unavailable lines must be skipped rather than trusted.
+- [ ] As an authenticated customer, add a non-variant product and a selected variant, then confirm persistent cart lines are private to that customer, stock-capped, and remove/update controls work.
+- [ ] At `/checkout`, leave required fields invalid, verify accessible messages, then submit a valid demo address. Confirm the notice clearly states no real payment is charged.
+- [ ] Submit the same checkout once and refresh/retry using the same in-flight request only; confirm one order exists, cart clears, prices come from the database, and variant versus product stock decrements exactly once.
+- [ ] Put an inactive, deleted, or over-stocked line in a test cart through the local database and confirm checkout fails atomically with no partial order, no partial stock decrement, and no cart clear.
+- [ ] With two customer accounts, confirm each can view only their own `/orders` and `/orders/[orderNumber]`; an unknown or another customer's order number must not disclose its existence.
+- [ ] Upload a valid JPEG/PNG/WebP avatar under 2 MB and confirm it displays only to the owner. Attempt an unsupported type, oversized file, or another user's storage path and confirm it is rejected.

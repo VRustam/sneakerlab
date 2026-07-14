@@ -74,4 +74,18 @@ describe('Supabase migration contract', () => {
     expect(storage).toContain('public.is_admin()');
     expect(storage).toContain('(storage.foldername(name))[1] = auth.uid()::text');
   });
+
+  it('makes checkout idempotent without accepting browser prices or user ids', async () => {
+    const checkout = await readMigration('20260714140000_add_checkout_idempotency.sql');
+
+    expect(checkout).toContain('idempotency_key uuid');
+    expect(checkout).toContain('orders_user_idempotency_key_idx');
+    expect(checkout).toContain('v_user_id uuid := auth.uid();');
+    expect(checkout).toContain('p_idempotency_key uuid');
+    expect(checkout).toContain('return v_order_id;');
+    expect(checkout).toContain('for update');
+    expect(checkout).not.toContain('p_user_id');
+    expect(checkout).not.toContain('p_total');
+    expect(checkout).not.toContain('p_unit_price');
+  });
 });

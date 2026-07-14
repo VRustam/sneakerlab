@@ -1,10 +1,12 @@
 import { AlertCircle, Inbox, LoaderCircle } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 interface StateProps {
   title?: string;
   description?: string;
   className?: string;
+  action?: ReactNode;
 }
 
 const stateClassName =
@@ -28,12 +30,14 @@ export function EmptyState({
   title = 'Nothing here yet',
   description = 'Check back soon.',
   className,
+  action,
 }: StateProps) {
   return (
     <div className={cn(stateClassName, className)}>
       <Inbox className="size-6 text-muted-foreground" aria-hidden="true" />
       <p className="font-medium">{title}</p>
       <p className="text-sm text-muted-foreground">{description}</p>
+      {action}
     </div>
   );
 }

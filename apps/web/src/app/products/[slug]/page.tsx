@@ -143,7 +143,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           <p className="text-base leading-7 text-muted-foreground">
             {product.description ?? product.short_description}
           </p>
-          <VariantSelector variants={product.variants} />
+          <VariantSelector
+            isAuthenticated={Boolean(user)}
+            product={product}
+            returnPath={returnPath}
+            variants={product.variants}
+          />
           <Card className="bg-muted/30 shadow-none">
             <CardContent className="flex gap-3 p-4 text-sm text-muted-foreground">
               <Truck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-primary" />

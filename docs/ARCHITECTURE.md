@@ -50,6 +50,25 @@ flowchart LR
 
 Every public product query explicitly scopes to active products. Filtering, sorting, and pagination execute in Supabase; the browser receives only the resulting page rather than a complete catalog. Anonymous favorite links preserve an internal, validated continuation path to sign-in.
 
+## Cart, checkout, and order flow
+
+Guest cart lines are stored in browser local storage as identifiers plus display-only snapshots. Their price and availability are never trusted at checkout. After sign-in, the customer is offered a deterministic merge into RLS-owned `cart_items`; each accepted line is rechecked against the active product and selected variant stock.
+
+```mermaid
+flowchart LR
+  Guest["Guest cart: local storage"] --> Merge["Validated server merge"]
+  UserCart["RLS-owned cart_items"] --> Checkout["React Hook Form + Zod"]
+  Checkout --> RPC["create_order_from_cart RPC"]
+  RPC --> Lock["Lock cart, product, and variant rows"]
+  Lock --> Snapshot["Create order + item snapshots"]
+  Snapshot --> Decrement["Decrement exactly one stock source"]
+  Decrement --> Clear["Clear cart atomically"]
+```
+
+The checkout RPC derives the customer from `auth.uid()`, derives monetary values from current database prices, and locks rows before checking stock. Variant lines decrement variant stock; non-variant lines decrement product stock, never both. A per-user idempotency UUID is unique on `orders`, so retrying the same checkout returns the original order rather than creating a duplicate. Order lookups always scope to the authenticated owner.
+
+Profile name edits are server-authorized and never expose protected fields. Avatar uploads accept only JPEG/PNG/WebP under 2 MB, write only to the authenticated user's private Storage path, and save only that path in the profile; signed URLs are generated server-side for display.
+
 ## Phase 2 data and security model
 
 The database is the authority for prices, stock, roles, and orders. Customer clients can read public active catalog data and manage only their own profile, favorites, cart, and order history. They cannot insert an order or its items directly: `create_order_from_cart` derives the caller from `auth.uid()`, locks cart/catalog rows, calculates prices from the database, validates stock, writes immutable snapshots, decrements one consistent stock source, and clears the cart atomically.

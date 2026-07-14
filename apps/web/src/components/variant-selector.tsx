@@ -1,16 +1,26 @@
 'use client';
 
 import { useState } from 'react';
+import { CartAddButton } from '@/components/cart-add-button';
 import { Button } from '@/components/ui/button';
 import { getVariantSelectionState } from '@/lib/catalog/variant-selection';
-import type { CatalogVariant } from '@/lib/catalog/types';
+import { getProductImage } from '@/lib/catalog/catalog-format';
+import type { CatalogProduct, CatalogVariant } from '@/lib/catalog/types';
 import { cn } from '@/lib/utils';
 
 interface VariantSelectorProps {
+  product: CatalogProduct;
+  isAuthenticated: boolean;
+  returnPath: string;
   variants: CatalogVariant[];
 }
 
-export function VariantSelector({ variants }: VariantSelectorProps) {
+export function VariantSelector({
+  product,
+  isAuthenticated,
+  returnPath,
+  variants,
+}: VariantSelectorProps) {
   const [color, setColor] = useState<string | null>(null);
   const [size, setSize] = useState<string | null>(null);
   const selection = getVariantSelectionState(variants, color, size);
@@ -19,7 +29,28 @@ export function VariantSelector({ variants }: VariantSelectorProps) {
   );
 
   if (variants.length === 0) {
-    return <p className="text-sm text-muted-foreground">This style has no selectable variants.</p>;
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground">
+          This style has one standard, non-variant option.
+        </p>
+        <CartAddButton
+          canAdd={product.stock > 0}
+          isAuthenticated={isAuthenticated}
+          payload={{
+            productId: product.id,
+            variantId: null,
+            productName: product.name,
+            imageUrl: getProductImage(product).src,
+            price: product.price,
+            colorName: null,
+            size: null,
+            availableStock: product.stock,
+          }}
+          returnPath={returnPath}
+        />
+      </div>
+    );
   }
 
   return (
@@ -76,9 +107,21 @@ export function VariantSelector({ variants }: VariantSelectorProps) {
           ? `${selection.selectedVariant.color_name}, size ${selection.selectedVariant.size}: ${selection.selectedVariant.stock} available.`
           : 'Choose an available color and size combination.'}
       </div>
-      <Button disabled={!selection.selectedVariant} size="lg" type="button">
-        {selection.selectedVariant ? 'Add to cart in Phase 4' : 'Select an available option'}
-      </Button>
+      <CartAddButton
+        canAdd={Boolean(selection.selectedVariant)}
+        isAuthenticated={isAuthenticated}
+        payload={{
+          productId: product.id,
+          variantId: selection.selectedVariant?.id ?? null,
+          productName: product.name,
+          imageUrl: getProductImage(product).src,
+          price: product.price,
+          colorName: selection.selectedVariant?.color_name ?? null,
+          size: selection.selectedVariant?.size ?? null,
+          availableStock: selection.selectedVariant?.stock ?? 0,
+        }}
+        returnPath={returnPath}
+      />
     </div>
   );
 }

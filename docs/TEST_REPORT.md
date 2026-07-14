@@ -84,3 +84,27 @@ Phase 2's local database gate is complete. Phase 3 can now proceed. The Codex sa
 - Server-rendered catalog reads are centralized in a typed repository and always scope public product queries to active products.
 - URL-backed search, category/size/color/price/featured filters, sort order, pagination, clear filters, empty/error/loading states, product cards, product detail, variant availability, anonymous favorite continuation, and user-owned favorite mutations have implementation and unit/component coverage.
 - The Playwright suite covers seeded catalog search, category filter/clear URLs, price sorting, product detail plus an unavailable size, anonymous favorite sign-in continuation, and mobile horizontal overflow. It remains unexecuted because this Codex sandbox blocks the web-server port before the browser launches.
+
+## Phase 4
+
+| Command or check                        | Result                   | Notes                                                                                                                                                                                     |
+| --------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint`                             | passed                   | ESLint completed successfully after cart, checkout, order, and avatar work.                                                                                                               |
+| `pnpm typecheck`                        | passed                   | Shared types and web TypeScript checks completed successfully.                                                                                                                            |
+| `pnpm test`                             | passed                   | Vitest: 20 files and 43 tests passed, including cart identity/stock limits, guest serialization, checkout schema/idempotency input, order snapshots, and the checkout migration contract. |
+| `pnpm build`                            | passed                   | The Next.js Webpack production compiler completed source compilation and its build lock cleared without an error.                                                                         |
+| `HOME=/tmp pnpm exec supabase db reset` | blocked by local sandbox | The temporary home workaround bypassed telemetry-file access, but this Codex sandbox was denied the Docker socket at `/var/run/docker.sock` (`connect: operation not permitted`).         |
+| `pnpm test:e2e`                         | blocked by local sandbox | Playwright could not execute a test because `next start` was denied `0.0.0.0:3100` (`listen EPERM`).                                                                                      |
+
+### Phase 4 remaining local validation
+
+Run the following in a normal Terminal while Docker Desktop is available. The reset applies `20260714140000_add_checkout_idempotency.sql` before the database test suite:
+
+```bash
+cd /Users/apple/Documents/Codex/SneakerLab
+pnpm exec supabase db reset
+pnpm exec supabase test db
+pnpm test:e2e
+```
+
+The browser suite includes guest add/update/remove and anonymous checkout redirect coverage. Fully authenticated demo checkout, confirmation, order-history, duplicate-submit, and low-stock browser scenarios require a local authenticated test identity, which is intentionally not fabricated in source fixtures.

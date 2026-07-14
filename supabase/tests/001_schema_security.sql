@@ -1,6 +1,6 @@
 begin;
 
-select plan(22);
+select plan(24);
 
 select ok(exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'profiles'), 'profiles table exists');
 select ok(exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'products'), 'products table exists');
@@ -11,6 +11,8 @@ select ok((select relrowsecurity from pg_class where oid = 'public.profiles'::re
 select ok((select relrowsecurity from pg_class where oid = 'public.products'::regclass), 'products has RLS enabled');
 select ok((select relrowsecurity from pg_class where oid = 'public.orders'::regclass), 'orders has RLS enabled');
 select ok(exists (select 1 from pg_indexes where schemaname = 'public' and indexname = 'cart_items_unique_logical_line'), 'cart unique logical line index exists');
+select has_column('public', 'orders', 'idempotency_key', 'orders store a checkout idempotency key');
+select ok(exists (select 1 from pg_indexes where schemaname = 'public' and indexname = 'orders_user_idempotency_key_idx'), 'orders prevent duplicate checkout keys per user');
 select ok(exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'create_order_from_cart'), 'secure order RPC exists');
 select ok(not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'orders' and cmd = 'INSERT' and roles @> array['authenticated']::name[]), 'customers have no direct order insert policy');
 select ok(exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'products' and policyname = 'products_read_active'), 'active product policy exists');

@@ -211,6 +211,7 @@ export type Database = {
           customer_name: string;
           customer_email: string;
           shipping_address: Json;
+          idempotency_key: string | null;
           created_at: string;
           updated_at: string;
         },
@@ -225,11 +226,13 @@ export type Database = {
           customer_name: string;
           customer_email: string;
           shipping_address: Json;
+          idempotency_key?: string | null;
           created_at?: string;
           updated_at?: string;
         },
         {
           status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+          idempotency_key?: string | null;
           updated_at?: string;
         }
       >;
@@ -271,6 +274,7 @@ export type Database = {
           p_customer_email: string;
           p_shipping_address: Json;
           p_shipping_cost?: number;
+          p_idempotency_key?: string;
         };
         Returns: string;
       };
