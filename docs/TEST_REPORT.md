@@ -44,9 +44,9 @@ No test or build result is treated as passed until the listed command completes 
 | ---------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
 | `pnpm exec supabase --version`                       | passed                   | Supabase CLI 2.109.1 is installed locally.                                                                               |
 | `docker info --format '{{.ServerVersion}}'`          | blocked by local sandbox | Docker Desktop was opened, but this Codex process is denied access to `/Users/apple/.docker/run/docker.sock`.            |
-| `pnpm exec supabase start`                           | blocked by local sandbox | Supabase CLI 2.109.1 reached Docker but its Unix-socket connection was denied with `operation not permitted`.            |
-| `pnpm exec supabase db reset`                        | blocked by local service | Could not apply migrations or seed against a clean local database without the Docker daemon.                             |
-| `supabase/tests/001_schema_security.sql`             | not run                  | pgTAP test file is ready for `supabase test db` once the local stack starts. It is not a passing result.                 |
+| `pnpm exec supabase start`                           | passed (user terminal)   | User-run Terminal output confirms the local stack started after applying all three migrations and seed data.             |
+| `pnpm exec supabase db reset`                        | passed (user terminal)   | User-run Terminal output confirms a clean reset applied all migrations and `supabase/seed.sql`.                          |
+| `supabase/tests/001_schema_security.sql`             | passed (user terminal)   | `pnpm exec supabase test db` completed successfully: 1 file and 22 pgTAP tests passed.                                   |
 | `pnpm lint`                                          | passed                   | ESLint completed successfully.                                                                                           |
 | `pnpm typecheck`                                     | passed                   | Shared types and web TypeScript checks completed successfully.                                                           |
 | `pnpm test`                                          | passed                   | Vitest: 9 files and 18 tests passed, including four migration/security contract tests.                                   |
@@ -55,23 +55,13 @@ No test or build result is treated as passed until the listed command completes 
 | `pnpm test:e2e`                                      | blocked by local sandbox | The production server started; Chromium exited before test execution because macOS denied its Mach-port registration.    |
 | `flutter pub get`, `flutter analyze`, `flutter test` | blocked by local SDK     | Repeated Phase 1 limitation: the installed Flutter Dart VM crashes during startup.                                       |
 
-### Database validation to run once Docker is available
-
-```bash
-pnpm exec supabase start
-pnpm exec supabase db reset
-pnpm exec supabase test db
-```
-
-The reset must apply all three migrations, load the four categories and ten products in `supabase/seed.sql`, and then execute the pgTAP checks. The static migration tests are useful local coverage, but they do not replace this database execution.
-
 ### Latest revalidation
 
 - `pnpm lint`, `pnpm typecheck`, and `pnpm test` completed successfully; Vitest ran 9 files and 18 tests.
 - `pnpm build` completed successfully with `next build --webpack`. The default Turbopack build had failed only because this sandbox denied its local process/port operation, so the project script now uses the supported Webpack compiler.
 - `pnpm secret:scan` completed successfully.
-- Docker Desktop was open during this retry. `supabase start` still could not access the daemon because the Codex sandbox denied its Unix-socket connection. Consequently, `supabase db reset` and `supabase test db` were not run and are not passing results.
+- The Codex sandbox still cannot access Docker directly. The user ran the local stack from Terminal: `supabase start` and `supabase db reset` applied the three migrations and seed data, then `supabase test db` passed all 22 pgTAP assertions. This is a user-run result, not a command executed by the Codex sandbox.
 
-## Continuation blocker
+## Continuation status
 
-Phase 3 is intentionally blocked until the local Supabase stack can pass the Phase 2 reset/test flow. Docker Desktop is open, but the current Codex sandbox is denied access to its Unix socket. The Flutter SDK failure remains a separate blocker for Phase 6 validation. No catalog, favorites, cart, order, admin, or mobile integration test has been represented as passing without those required services.
+Phase 2's local database gate is complete. Phase 3 can now proceed. The Codex sandbox still cannot directly connect to Docker, so any later database-only validation must be run in the user's Terminal and reported verbatim. The Flutter SDK failure remains a separate Phase 6 validation blocker.
