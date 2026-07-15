@@ -7,7 +7,9 @@ test('guest can add a selected variant, change quantity, and remove it', async (
   await expect(page).toHaveURL(/\/cart\?guest=1$/);
   await expect(page.getByText('Atlas Court')).toBeVisible();
   await page.getByRole('button', { name: 'Increase guest quantity' }).click();
-  await expect(page.getByText('$220.00')).toBeVisible();
+  await expect(
+    page.getByLabel('Guest cart items').getByText('$220.00', { exact: true }),
+  ).toBeVisible();
 
   await page.getByRole('button', { name: 'Remove' }).click();
   await expect(page.getByText('Your guest cart is empty')).toBeVisible();

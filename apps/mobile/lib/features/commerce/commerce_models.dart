@@ -1,15 +1,19 @@
 class ProductCategory {
-  const ProductCategory({required this.id, required this.name, required this.slug});
+  const ProductCategory({
+    required this.id,
+    required this.name,
+    required this.slug,
+  });
 
   final String id;
   final String name;
   final String slug;
 
   factory ProductCategory.fromMap(Map<String, dynamic> row) => ProductCategory(
-        id: row['id'] as String,
-        name: row['name'] as String,
-        slug: row['slug'] as String,
-      );
+    id: row['id'] as String,
+    name: row['name'] as String,
+    slug: row['slug'] as String,
+  );
 }
 
 class ProductVariant {
@@ -30,13 +34,13 @@ class ProductVariant {
   final String? colorHex;
 
   factory ProductVariant.fromMap(Map<String, dynamic> row) => ProductVariant(
-        id: row['id'] as String,
-        colorName: row['color_name'] as String,
-        size: row['size'] as String,
-        stock: row['stock'] as int,
-        sku: row['sku'] as String,
-        colorHex: row['color_hex'] as String?,
-      );
+    id: row['id'] as String,
+    colorName: row['color_name'] as String,
+    size: row['size'] as String,
+    stock: row['stock'] as int,
+    sku: row['sku'] as String,
+    colorHex: row['color_hex'] as String?,
+  );
 }
 
 class Product {
@@ -70,29 +74,30 @@ class Product {
   final List<ProductVariant> variants;
   final String? modelUrl;
 
-  bool get isInStock => variants.isEmpty ? stock > 0 : variants.any((variant) => variant.stock > 0);
+  bool get isInStock => variants.isEmpty
+      ? stock > 0
+      : variants.any((variant) => variant.stock > 0);
 
   factory Product.fromMap(
     Map<String, dynamic> row, {
     ProductCategory? category,
     List<String> images = const [],
     List<ProductVariant> variants = const [],
-  }) =>
-      Product(
-        id: row['id'] as String,
-        name: row['name'] as String,
-        slug: row['slug'] as String,
-        price: (row['price'] as num).toDouble(),
-        stock: row['stock'] as int,
-        isFeatured: row['is_featured'] as bool? ?? false,
-        imageUrl: row['image_url'] as String?,
-        shortDescription: row['short_description'] as String?,
-        description: row['description'] as String?,
-        category: category,
-        images: images,
-        variants: variants,
-        modelUrl: row['model_3d_url'] as String?,
-      );
+  }) => Product(
+    id: row['id'] as String,
+    name: row['name'] as String,
+    slug: row['slug'] as String,
+    price: (row['price'] as num).toDouble(),
+    stock: row['stock'] as int,
+    isFeatured: row['is_featured'] as bool? ?? false,
+    imageUrl: row['image_url'] as String?,
+    shortDescription: row['short_description'] as String?,
+    description: row['description'] as String?,
+    category: category,
+    images: images,
+    variants: variants,
+    modelUrl: row['model_3d_url'] as String?,
+  );
 }
 
 class CartLine {
@@ -181,14 +186,13 @@ class CatalogFilter {
     double? maximumPrice,
     bool clearMaximumPrice = false,
     int? page,
-  }) =>
-      CatalogFilter(
-        query: query ?? this.query,
-        categorySlug: clearCategory ? null : categorySlug ?? this.categorySlug,
-        sort: sort ?? this.sort,
-        maximumPrice: clearMaximumPrice ? null : maximumPrice ?? this.maximumPrice,
-        page: page ?? this.page,
-      );
+  }) => CatalogFilter(
+    query: query ?? this.query,
+    categorySlug: clearCategory ? null : categorySlug ?? this.categorySlug,
+    sort: sort ?? this.sort,
+    maximumPrice: clearMaximumPrice ? null : maximumPrice ?? this.maximumPrice,
+    page: page ?? this.page,
+  );
 }
 
 enum CatalogSort { newest, priceLowToHigh, priceHighToLow }

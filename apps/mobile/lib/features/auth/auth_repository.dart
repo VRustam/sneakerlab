@@ -3,7 +3,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 abstract class AuthRepository {
   Future<AppUser?> currentUser();
   Future<String?> signIn({required String email, required String password});
-  Future<String?> register({required String email, required String password, required String fullName});
+  Future<String?> register({
+    required String email,
+    required String password,
+    required String fullName,
+  });
   Future<String?> requestPasswordReset(String email);
   Future<void> signOut();
 }
@@ -26,7 +30,10 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<String?> signIn({required String email, required String password}) async {
+  Future<String?> signIn({
+    required String email,
+    required String password,
+  }) async {
     try {
       await _client.auth.signInWithPassword(email: email, password: password);
       return null;
@@ -36,9 +43,17 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<String?> register({required String email, required String password, required String fullName}) async {
+  Future<String?> register({
+    required String email,
+    required String password,
+    required String fullName,
+  }) async {
     try {
-      await _client.auth.signUp(email: email, password: password, data: {'full_name': fullName});
+      await _client.auth.signUp(
+        email: email,
+        password: password,
+        data: {'full_name': fullName},
+      );
       return null;
     } on AuthException {
       return 'We could not complete that request. Check your details and try again.';
@@ -68,10 +83,17 @@ class FakeAuthRepository implements AuthRepository {
   Future<AppUser?> currentUser() async => null;
 
   @override
-  Future<String?> signIn({required String email, required String password}) async => error;
+  Future<String?> signIn({
+    required String email,
+    required String password,
+  }) async => error;
 
   @override
-  Future<String?> register({required String email, required String password, required String fullName}) async => error;
+  Future<String?> register({
+    required String email,
+    required String password,
+    required String fullName,
+  }) async => error;
 
   @override
   Future<String?> requestPasswordReset(String email) async => error;

@@ -1,6 +1,6 @@
 begin;
 
-select plan(31);
+select plan(32);
 
 select ok(exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'profiles'), 'profiles table exists');
 select ok(exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'products'), 'products table exists');
@@ -33,6 +33,16 @@ select ok(exists (select 1 from storage.buckets where id = 'product-models' and 
 select is(public.is_valid_order_status_transition('pending', 'processing'), true, 'pending orders may move to processing');
 select is(public.is_valid_order_status_transition('pending', 'delivered'), false, 'pending orders cannot skip to delivered');
 select ok(exists (select 1 from pg_trigger where tgrelid = 'public.orders'::regclass and tgname = 'orders_enforce_status_transition'), 'database trigger enforces order transition rules');
+select lives_ok(
+  $$
+    set local role authenticated;
+    select set_config('request.jwt.claim.sub', '90000000-0000-0000-0000-000000000001', true);
+    update public.orders
+    set status = 'processing'
+    where id = '50000000-0000-0000-0000-000000000001';
+  $$,
+  'an authenticated admin can apply an allowed order status transition'
+);
 
 select * from finish();
 rollback;

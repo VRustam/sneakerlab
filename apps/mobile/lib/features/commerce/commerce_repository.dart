@@ -46,8 +46,10 @@ class SupabaseCommerceRepository implements CommerceRepository {
 
   @override
   Future<List<Product>> products(CatalogFilter filter) async {
-    var query =
-        _client.from('products').select(_productFields).eq('is_active', true);
+    var query = _client
+        .from('products')
+        .select(_productFields)
+        .eq('is_active', true);
     if (filter.query.trim().isNotEmpty) {
       final value = filter.query.replaceAll(RegExp(r'[%(),]'), ' ').trim();
       query = query.or('name.ilike.%$value%,short_description.ilike.%$value%');
@@ -77,14 +79,14 @@ class SupabaseCommerceRepository implements CommerceRepository {
       CatalogSort.priceHighToLow => query.order('price', ascending: false),
       CatalogSort.newest => query.order('created_at', ascending: false),
     };
-    final rows =
-        await orderedQuery.range(filter.page * 20, filter.page * 20 + 19);
+    final rows = await orderedQuery.range(
+      filter.page * 20,
+      filter.page * 20 + 19,
+    );
     return rows
         .map(
-          (row) => Product.fromMap(
-            row,
-            category: categoryById[row['category_id']],
-          ),
+          (row) =>
+              Product.fromMap(row, category: categoryById[row['category_id']]),
         )
         .toList();
   }
@@ -118,8 +120,9 @@ class SupabaseCommerceRepository implements CommerceRepository {
           .order('sku'),
     ]);
     final categoryRow = results[0] as Map<String, dynamic>?;
-    final category =
-        categoryRow == null ? null : ProductCategory.fromMap(categoryRow);
+    final category = categoryRow == null
+        ? null
+        : ProductCategory.fromMap(categoryRow);
     final images = (results[1] as List<Map<String, dynamic>>)
         .map((item) => item['image_url'] as String)
         .toList();
@@ -166,9 +169,10 @@ class SupabaseCommerceRepository implements CommerceRepository {
   Future<void> setFavorite(String productId, bool isFavorite) async {
     final userId = _userId();
     if (isFavorite) {
-      await _client
-          .from('favorites')
-          .insert({'user_id': userId, 'product_id': productId});
+      await _client.from('favorites').insert({
+        'user_id': userId,
+        'product_id': productId,
+      });
       return;
     }
     await _client
@@ -190,8 +194,7 @@ class SupabaseCommerceRepository implements CommerceRepository {
         .eq('user_id', _userId())
         .order('updated_at', ascending: false);
     return rows.map((row) {
-      final product =
-          Product.fromMap(row['products'] as Map<String, dynamic>);
+      final product = Product.fromMap(row['products'] as Map<String, dynamic>);
       final variantRow = row['product_variants'] as Map<String, dynamic>?;
       return CartLine(
         id: row['id'] as String,
@@ -207,19 +210,19 @@ class SupabaseCommerceRepository implements CommerceRepository {
     final userId = _userId();
     final existing = variantId == null
         ? await _client
-            .from('cart_items')
-            .select('id,quantity')
-            .eq('user_id', userId)
-            .eq('product_id', productId)
-            .isFilter('product_variant_id', null)
-            .maybeSingle()
+              .from('cart_items')
+              .select('id,quantity')
+              .eq('user_id', userId)
+              .eq('product_id', productId)
+              .isFilter('product_variant_id', null)
+              .maybeSingle()
         : await _client
-            .from('cart_items')
-            .select('id,quantity')
-            .eq('user_id', userId)
-            .eq('product_id', productId)
-            .eq('product_variant_id', variantId)
-            .maybeSingle();
+              .from('cart_items')
+              .select('id,quantity')
+              .eq('user_id', userId)
+              .eq('product_id', productId)
+              .eq('product_variant_id', variantId)
+              .maybeSingle();
     if (existing == null) {
       await _client.from('cart_items').insert({
         'user_id': userId,
@@ -260,13 +263,18 @@ class SupabaseCommerceRepository implements CommerceRepository {
     required Map<String, String> address,
     required String idempotencyKey,
   }) async {
-    final orderId = await _client.rpc('create_order_from_cart', params: {
-      'p_customer_name': name,
-      'p_customer_email': email,
-      'p_shipping_address': address,
-      'p_shipping_cost': 0,
-      'p_idempotency_key': idempotencyKey,
-    }) as String;
+    final orderId =
+        await _client.rpc(
+              'create_order_from_cart',
+              params: {
+                'p_customer_name': name,
+                'p_customer_email': email,
+                'p_shipping_address': address,
+                'p_shipping_cost': 0,
+                'p_idempotency_key': idempotencyKey,
+              },
+            )
+            as String;
     final row = await _client
         .from('orders')
         .select('id,order_number,total,status,created_at')
@@ -278,15 +286,14 @@ class SupabaseCommerceRepository implements CommerceRepository {
   CustomerOrder _orderFromMap(
     Map<String, dynamic> row, {
     List<OrderItem> items = const [],
-  }) =>
-      CustomerOrder(
-        id: row['id'] as String,
-        number: row['order_number'] as String,
-        total: (row['total'] as num).toDouble(),
-        status: row['status'] as String,
-        createdAt: DateTime.parse(row['created_at'] as String),
-        items: items,
-      );
+  }) => CustomerOrder(
+    id: row['id'] as String,
+    number: row['order_number'] as String,
+    total: (row['total'] as num).toDouble(),
+    status: row['status'] as String,
+    createdAt: DateTime.parse(row['created_at'] as String),
+    items: items,
+  );
 
   @override
   Future<List<CustomerOrder>> orders() async {
@@ -359,9 +366,9 @@ class UnavailableCommerceRepository implements CommerceRepository {
   const UnavailableCommerceRepository();
 
   Never _unavailable() => throw StateError(
-        'Supabase is not configured. Add only URL and anon key with '
-        '--dart-define.',
-      );
+    'Supabase is not configured. Add only URL and anon key with '
+    '--dart-define.',
+  );
 
   @override
   Future<List<ProductCategory>> categories() async => _unavailable();
@@ -402,8 +409,7 @@ class UnavailableCommerceRepository implements CommerceRepository {
     required String email,
     required Map<String, String> address,
     required String idempotencyKey,
-  }) async =>
-      _unavailable();
+  }) async => _unavailable();
 
   @override
   Future<List<CustomerOrder>> orders() async => _unavailable();

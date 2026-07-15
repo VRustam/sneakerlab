@@ -8,6 +8,10 @@ class AuthSession extends Notifier<AppUser?> {
   void setUser(AppUser? value) => state = value;
 }
 
-final authSessionProvider = NotifierProvider<AuthSession, AppUser?>(AuthSession.new);
+final authSessionProvider = NotifierProvider<AuthSession, AppUser?>(
+  AuthSession.new,
+);
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) => FakeAuthRepository());
+final authRepositoryProvider = Provider<AuthRepository>(
+  (ref) => FakeAuthRepository(),
+);

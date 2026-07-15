@@ -31,14 +31,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _error = null;
     });
     final repository = ref.read(authRepositoryProvider);
-    final error = await repository.signIn(email: _emailController.text.trim(), password: _passwordController.text);
+    final error = await repository.signIn(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (error != null) {
       setState(() => _error = error);
       return;
     }
-    ref.read(authSessionProvider.notifier).setUser(await repository.currentUser());
+    ref
+        .read(authSessionProvider.notifier)
+        .setUser(await repository.currentUser());
     if (!mounted) return;
     context.go('/');
   }
@@ -57,13 +62,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: ListView(
                 shrinkWrap: true,
                 children: [
-                  Text('Welcome back', style: Theme.of(context).textTheme.headlineMedium),
+                  Text(
+                    'Welcome back',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
                   const SizedBox(height: 8),
                   const Text('Sign in to continue to SneakerLab.'),
                   const SizedBox(height: 24),
                   TextFormField(
                     controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email address'),
+                    decoration: const InputDecoration(
+                      labelText: 'Email address',
+                    ),
                     keyboardType: TextInputType.emailAddress,
                     validator: _validateEmail,
                   ),
@@ -74,10 +84,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     obscureText: true,
                     validator: _validatePassword,
                   ),
-                  if (_error != null) ...[const SizedBox(height: 16), Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error))],
+                  if (_error != null) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      _error!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
-                  FilledButton(onPressed: _isLoading ? null : _submit, child: Text(_isLoading ? 'Signing in…' : 'Sign in')),
-                  TextButton(onPressed: () => context.go('/register'), child: const Text('Create an account')),
+                  FilledButton(
+                    onPressed: _isLoading ? null : _submit,
+                    child: Text(_isLoading ? 'Signing in…' : 'Sign in'),
+                  ),
+                  TextButton(
+                    onPressed: () => context.go('/register'),
+                    child: const Text('Create an account'),
+                  ),
                 ],
               ),
             ),
@@ -89,7 +113,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 }
 
 String? _validateEmail(String? value) {
-  if (value == null || !value.contains('@')) return 'Enter a valid email address.';
+  if (value == null || !value.contains('@')) {
+    return 'Enter a valid email address.';
+  }
   return null;
 }
 

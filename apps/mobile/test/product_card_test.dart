@@ -18,7 +18,9 @@ void main() {
     );
 
     await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: ProductCard(product: product))),
+      const MaterialApp(
+        home: Scaffold(body: ProductCard(product: product)),
+      ),
     );
 
     expect(find.text('Atlas Court'), findsOneWidget);

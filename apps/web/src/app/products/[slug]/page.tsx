@@ -1,15 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Box, ChevronRight, Truck } from 'lucide-react';
+import { ChevronRight, Truck } from 'lucide-react';
 import { FavoriteButton } from '@/components/favorite-button';
 import { PageContainer } from '@/components/page-container';
 import { ProductGallery } from '@/components/product-gallery';
 import { ProductGrid } from '@/components/product-grid';
+import { ProductModelViewer } from '@/components/product-model-viewer';
 import { ErrorState } from '@/components/states';
 import { VariantSelector } from '@/components/variant-selector';
 import { Card, CardContent } from '@/components/ui/card';
-import { formatPrice } from '@/lib/catalog/catalog-format';
+import { formatPrice, getProductImage } from '@/lib/catalog/catalog-format';
 import { getCatalogSession } from '@/lib/catalog/catalog-server';
 import type { ProductDetail } from '@/lib/catalog/types';
 
@@ -171,17 +172,11 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               </p>
             </details>
           </div>
-          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-5">
-            <div className="flex items-center gap-3">
-              <Box aria-hidden="true" className="size-5 text-primary" />
-              <div>
-                <p className="font-semibold">3D preview coming in Phase 7</p>
-                <p className="text-sm text-muted-foreground">
-                  The product image remains available while the interactive GLB viewer is prepared.
-                </p>
-              </div>
-            </div>
-          </div>
+          <ProductModelViewer
+            fallbackImage={getProductImage(product)}
+            modelUrl={product.model_3d_url}
+            productName={product.name}
+          />
         </div>
       </div>
       {relatedProducts.length > 0 ? (

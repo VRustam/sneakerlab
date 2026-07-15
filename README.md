@@ -1,94 +1,131 @@
 # SneakerLab
 
-> A portfolio-grade 3D sneaker commerce experience for web and Flutter, backed by Supabase.
+> A secure, full-stack sneaker commerce portfolio with an interactive 3D product experience on web and mobile.
 
-SneakerLab is being built as a secure demo-commerce platform: customers can discover generic sneakers, manage a cart and orders, and explore supported products in 3D. A role-protected web admin experience and a Flutter customer app share the same Supabase backend.
+SneakerLab is a deliberately small but production-minded commerce system. Customers can discover generic sneaker products, save favorites, manage a cart, place a **demo-only** checkout, inspect orders, and explore a supported product in 3D. A role-protected admin dashboard and Flutter customer application share one Supabase backend.
 
-## Current status
+## What it demonstrates
 
-Phases 1–6 are complete. The platform includes secure Supabase migrations, deterministic seed data, RLS policies, server-rendered catalog, carts/orders, profile editing, a role-protected admin dashboard, and a Flutter customer app with matching catalog, favorite, cart, checkout, order, and account flows. The Phase 6 mobile quality gate passed in a normal local Terminal. See [progress](docs/PROGRESS.md) and the truthful [test report](docs/TEST_REPORT.md).
+- A responsive Next.js App Router storefront with server-rendered catalog queries, URL-backed filters, pagination, product variants, favorites, cart, and order history.
+- A client-only React Three Fiber / Drei glTF preview with orbit controls, touch/pinch support, reset, reduced-motion behavior, loading state, and image fallback.
+- A Flutter Material 3 app with Supabase auth/session recovery, catalog, favorites, persistent cart, demo checkout, orders, account flow, and touch-based glTF viewing for supported devices.
+- A secure Supabase foundation: ordered migrations, constraints, RLS, storage policies, server-calculated checkout RPC, immutable order snapshots, and pgTAP coverage.
+- A server-authorized admin dashboard for products, categories, variants, images, GLB/glTF media, and allowed order-status changes.
+- Real automated quality gates for TypeScript, web components, production builds, Flutter, database policies, and browser journeys. Results are recorded truthfully in the [test report](docs/TEST_REPORT.md).
 
 ## Stack
 
-- Next.js App Router, React, TypeScript, Tailwind CSS, shadcn/ui-style local primitives
-- React Hook Form, Zod, Supabase JavaScript client, Vitest, React Testing Library, Playwright
-- Flutter, Material 3, Riverpod, GoRouter, Supabase Flutter
-- Supabase PostgreSQL, Auth, Storage, RLS, SQL migrations
+| Area    | Technology                                                                        |
+| ------- | --------------------------------------------------------------------------------- |
+| Web     | Next.js App Router, React, TypeScript, Tailwind CSS, React Hook Form, Zod         |
+| 3D web  | Three.js, React Three Fiber, Drei, GLB/glTF                                       |
+| Mobile  | Flutter, Material 3, Riverpod, GoRouter, Supabase Flutter, `model_viewer_plus`    |
+| Backend | Supabase Auth, PostgreSQL, Storage, Row Level Security, SQL migrations, pgTAP     |
+| Quality | Vitest, React Testing Library, Playwright, Flutter test/analyze, ESLint, Prettier |
+
+## Architecture
+
+```mermaid
+flowchart LR
+  Customer["Customer browser"] --> Web["Next.js storefront"]
+  Admin["Admin browser"] --> Web
+  Mobile["Flutter customer app"] --> PublicApi["Supabase public API\nanon key + session"]
+  Web --> Server["Server components/actions\nauthorized reads and writes"]
+  Web --> Three["Client-only 3D viewer\nR3F + Drei"]
+  Server --> Supabase["Supabase\nAuth · PostgreSQL · Storage"]
+  PublicApi --> Supabase
+  Supabase --> RLS["RLS + database constraints\nRPC and triggers"]
+```
+
+More detailed system, authentication, customer-flow, admin-flow, and ERD diagrams live in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Repository layout
 
 ```text
-apps/web/              Next.js storefront and admin application
-apps/mobile/           Flutter customer application
+apps/web/              Next.js storefront, admin dashboard, web 3D viewer, browser tests
+apps/mobile/           Flutter customer application and mobile 3D viewer
 packages/shared-types/ Cross-platform TypeScript domain contracts
-supabase/              Migrations, database tests, and deterministic seeds
-docs/                  Architecture, progress, test reports, and human checks
+supabase/              Migrations, RLS/storage policies, deterministic seed, pgTAP tests
+docs/                  Architecture, deployment, progress, truthful reports, capture checklist
 ```
 
-## Prerequisites
+## Local setup
 
-- Node.js 22+
-- pnpm 11+
-- Flutter stable for mobile development
-- Supabase CLI and Docker for local database validation (Phase 2 onward)
+Prerequisites: Node.js 22+, pnpm 11+, Flutter stable, Docker Desktop, and Supabase CLI.
 
-## Environment variables
+1. Install web workspace dependencies.
 
-Copy `.env.example` to `apps/web/.env.local` and add only a Supabase project URL and anonymous key. `SUPABASE_SERVICE_ROLE_KEY` is server-only and is never needed by browser or Flutter customer code.
+   ```bash
+   pnpm install --frozen-lockfile
+   ```
 
-## Local development
+2. Copy `.env.example` to `apps/web/.env.local`, then set only the Supabase project URL and anonymous key. Never place a service-role key in a browser or Flutter build.
+
+3. Start and seed the local Supabase project.
+
+   ```bash
+   pnpm exec supabase start
+   pnpm exec supabase db reset
+   pnpm exec supabase test db
+   ```
+
+4. Start the web app.
+
+   ```bash
+   pnpm dev:web
+   ```
+
+5. Prepare and run the Flutter app.
+
+   ```bash
+   cd apps/mobile
+   flutter pub get
+   flutter analyze
+   flutter test
+   flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...
+   ```
+
+`model_viewer_plus` uses the standards-based `<model-viewer>` renderer. Android and iOS runners are included, including the local-only Android network exception required for the bundled model asset. The built-in generic Pulse Layer model is a local asset; hosted product models must be HTTPS. See [deployment guidance](docs/DEPLOYMENT.md#flutter-release-configuration) before a device or release build.
+
+## Quality commands
 
 ```bash
-pnpm install
-pnpm dev:web
-```
-
-In another terminal, run the web checks:
-
-```bash
-pnpm verify
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
 pnpm test:e2e
-```
+pnpm secret:scan
+pnpm format:check
 
-For local Supabase validation, start Docker Desktop first, then run:
-
-```bash
-pnpm exec supabase start
-pnpm exec supabase db reset
-pnpm exec supabase test db
-```
-
-See [Supabase setup](supabase/README.md) for type generation, safe admin assignment, and the storage-policy contract.
-
-### Local admin browser fixture
-
-After a local database reset, Playwright uses two development-only identities:
-
-- admin@sneakerlab.local / SneakerLabE2E123!
-- customer@sneakerlab.local / SneakerLabE2E123!
-
-They exist only in supabase/seed.sql for local tests. Do not create these credentials in a hosted environment.
-
-For mobile:
-
-```bash
 cd apps/mobile
 flutter pub get
 flutter analyze
 flutter test
-flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...
 ```
 
-## Roadmap
+The browser suite contains 16 end-to-end journeys. Database tests require the local Supabase/Docker service. See [docs/TEST_REPORT.md](docs/TEST_REPORT.md) for which commands actually passed, were user-run, or are blocked by the Codex sandbox.
 
-1. Foundation, auth shell, and tests
-2. Supabase schema, RLS, storage, seeds, and security tests
-3. Storefront catalog, details, and favorites
-4. Cart, demo checkout, and customer orders
-5. Secure web admin dashboard
-6. Flutter customer commerce app
-7. 3D viewer, portfolio polish, and deployment readiness
+## Deployment
 
-## Known limitations
+No production deployment is performed by this repository. The deployment guide covers:
 
-The interactive 3D viewer is a later phase. The Codex sandbox cannot bind the Playwright test server port and its x86_64 Dart VM crashes before Flutter analysis/tests can begin; the exact commands and results are recorded in the test report.
+- linking a hosted Supabase project, applying migrations, seeding only intentional demo data, configuring Storage, and assigning admin roles through a privileged workflow;
+- Vercel environment variables with the service-role key server-only;
+- Flutter Android/iOS renderer and release configuration;
+- a post-deploy smoke-test and security checklist.
+
+Read [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) before creating any hosted resource.
+
+## Screenshots
+
+No screenshots are fabricated. Capture a real web/mobile/admin run using the checklist in [docs/screenshots/README.md](docs/screenshots/README.md).
+
+## Limits and roadmap
+
+- Checkout is intentionally demo-only; it never charges a payment method.
+- One generic local glTF model demonstrates the interaction path. Real merchandising needs optimized, licensed GLB/glTF assets and CDN delivery.
+- The mobile viewer’s WebView-based renderer uses a poster/image fallback when a model cannot render; device and OS testing remains required.
+- Browser E2E and Docker-backed database checks must run in a normal local terminal when sandbox process/port restrictions apply.
+
+Useful next work: payment-provider integration, transactional email, image/model optimization pipeline, analytics, accessibility review with real assistive technology, and a staging deployment.

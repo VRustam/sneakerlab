@@ -3,13 +3,13 @@ import { expect, test } from '@playwright/test';
 test('catalog displays seeded products and search narrows results', async ({ page }) => {
   await page.goto('/products');
   await expect(page.getByRole('heading', { name: 'Find your next pair' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Atlas Court' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Atlas Court', exact: true })).toBeVisible();
 
   await page.getByLabel('Search').fill('Metro');
   await page.getByRole('button', { name: 'Apply filters' }).click();
   await expect(page).toHaveURL(/q=Metro/);
-  await expect(page.getByRole('link', { name: 'Metro Knit' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Atlas Court' })).not.toBeVisible();
+  await expect(page.getByRole('link', { name: 'Metro Knit', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Atlas Court', exact: true })).not.toBeVisible();
 });
 
 test('category filtering and clear controls preserve shareable URL state', async ({ page }) => {
@@ -18,12 +18,12 @@ test('category filtering and clear controls preserve shareable URL state', async
   await page.getByRole('button', { name: 'Apply filters' }).click();
 
   await expect(page).toHaveURL(/category=court/);
-  await expect(page.getByRole('link', { name: 'Atlas Court' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Metro Knit' })).not.toBeVisible();
+  await expect(page.getByRole('link', { name: 'Atlas Court', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Metro Knit', exact: true })).not.toBeVisible();
 
   await page.getByRole('link', { name: 'Clear' }).click();
   await expect(page).toHaveURL(/\/products$/);
-  await expect(page.getByRole('link', { name: 'Metro Knit' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Metro Knit', exact: true })).toBeVisible();
 });
 
 test('price sorting, detail navigation, and variant availability work', async ({ page }) => {
@@ -32,10 +32,12 @@ test('price sorting, detail navigation, and variant availability work', async ({
   await page.getByRole('button', { name: 'Apply filters' }).click();
   await expect(page).toHaveURL(/sort=price_asc/);
 
-  const productLinks = page.getByRole('link', { name: /Atlas Court|Form Canvas|Core Motion/ });
-  await expect(productLinks.first()).toHaveAccessibleName('Form Canvas');
+  const productLinks = page.getByRole('link', {
+    name: /View Atlas Court|View Form Canvas|View Core Motion/,
+  });
+  await expect(productLinks.first()).toHaveAccessibleName('View Form Canvas');
 
-  await page.getByRole('link', { name: 'Atlas Court' }).click();
+  await page.getByRole('link', { name: 'Atlas Court', exact: true }).click();
   await expect(page).toHaveURL(/\/products\/atlas-court$/);
   await page.getByRole('button', { name: 'Ink' }).click();
   await expect(page.getByRole('button', { name: '9' })).toBeDisabled();

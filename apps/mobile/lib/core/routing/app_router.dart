@@ -14,8 +14,17 @@ import '../../features/cart/cart_screen.dart';
 import '../../features/checkout/checkout_screen.dart';
 import '../../features/orders/orders_screen.dart';
 
-String? routeRedirect({required bool isAuthenticated, required String location}) {
-  const protectedLocations = {'/favorites', '/cart', '/checkout', '/account', '/orders'};
+String? routeRedirect({
+  required bool isAuthenticated,
+  required String location,
+}) {
+  const protectedLocations = {
+    '/favorites',
+    '/cart',
+    '/checkout',
+    '/account',
+    '/orders',
+  };
   const authLocations = {'/login', '/register', '/forgot-password'};
 
   final isProtected =
@@ -41,19 +50,51 @@ final routerProvider = Provider<GoRouter>((ref) {
       );
     },
     routes: [
-      GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-      GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
-      GoRoute(path: '/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
       GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
-      GoRoute(path: '/products', builder: (context, state) => const ProductsScreen()),
-      GoRoute(path: '/products/:slug', builder: (context, state) => ProductDetailScreen(slug: state.pathParameters['slug']!)),
-      GoRoute(path: '/favorites', builder: (context, state) => const FavoritesScreen()),
+      GoRoute(
+        path: '/products',
+        builder: (context, state) => const ProductsScreen(),
+      ),
+      GoRoute(
+        path: '/products/:slug',
+        builder: (context, state) =>
+            ProductDetailScreen(slug: state.pathParameters['slug']!),
+      ),
+      GoRoute(
+        path: '/favorites',
+        builder: (context, state) => const FavoritesScreen(),
+      ),
       GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
-      GoRoute(path: '/checkout', builder: (context, state) => const CheckoutScreen()),
-      GoRoute(path: '/orders', builder: (context, state) => const OrdersScreen()),
-      GoRoute(path: '/orders/:number', builder: (context, state) => OrderDetailScreen(number: state.pathParameters['number']!)),
-      GoRoute(path: '/account', builder: (context, state) => const AccountScreen()),
+      GoRoute(
+        path: '/checkout',
+        builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
+        path: '/orders',
+        builder: (context, state) => const OrdersScreen(),
+      ),
+      GoRoute(
+        path: '/orders/:number',
+        builder: (context, state) =>
+            OrderDetailScreen(number: state.pathParameters['number']!),
+      ),
+      GoRoute(
+        path: '/account',
+        builder: (context, state) => const AccountScreen(),
+      ),
     ],
   );
 });

@@ -9,7 +9,9 @@ void main() {
   testWidgets('renders login and validates email and password', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [authRepositoryProvider.overrideWith((ref) => FakeAuthRepository())],
+        overrides: [
+          authRepositoryProvider.overrideWith((ref) => FakeAuthRepository()),
+        ],
         child: const MaterialApp(home: LoginScreen()),
       ),
     );

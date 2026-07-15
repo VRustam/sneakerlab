@@ -58,3 +58,13 @@ All items are **not tested** until a human performs them in the relevant environ
 - [ ] Browse Home and Shop, use search, category, and price sort controls, open a product, choose an in-stock variant, save/remove a favorite, and confirm the same favorite appears on the dedicated Favorites tab.
 - [ ] Add a product to Cart, increase/decrease/remove it, restart the app, and confirm the signed-in user's cart is retained. Start a demo checkout and confirm the no-payment notice, validation messages, success navigation, and order-history/detail record.
 - [ ] Update a profile name, confirm email/account display and optional avatar behavior, then sign out. Repeat with a second account and confirm favorites, cart, orders, and profile stay private.
+
+## Phase 7 3D, release readiness, and portfolio review
+
+- [ ] In a desktop browser, open `/products/pulse-layer`; rotate with pointer drag, zoom with scroll wheel, use Reset view, and confirm surrounding product/checkout controls remain interactive.
+- [ ] In a touch browser, rotate and pinch-zoom Pulse Layer. Turn on OS reduced-motion preference, reload, and confirm a static image fallback plus an explicit “Enable interactive 3D preview” option appears.
+- [ ] Open a model-less product and an intentionally unavailable model in a non-production record. Confirm the accessible image fallback appears without breaking the product gallery or details.
+- [ ] As an admin, upload a valid GLB and glTF below 20 MB, confirm the linked file preview, replace it, then unlink it. Attempt a bad extension, bad MIME type, and an oversized file; all must be rejected.
+- [ ] On Android and iOS, confirm the Pulse Layer asset rotates and zooms with touch, then confirm remote HTTPS model and poster/image fallback behavior on a real device. Check that no HTTP model loads in a release build.
+- [ ] Run the complete commands in the final test report from a normal Terminal with Docker Desktop. Record output rather than treating a command as passed by inspection.
+- [ ] Capture only real screenshots using `docs/screenshots/README.md`; check every capture for tokens, credentials, addresses, and personal data before publishing.

@@ -19,8 +19,9 @@ test('a customer cannot open the admin dashboard', async ({ page }) => {
 test('an admin manages catalog, media validation, and allowed order status changes', async ({
   page,
 }) => {
-  const productName = 'E2E Admin Court';
-  const productSlug = 'e2e-admin-court';
+  const productSuffix = Date.now().toString(36);
+  const productName = `E2E Admin Court ${productSuffix}`;
+  const productSlug = `e2e-admin-court-${productSuffix}`;
 
   await signIn(page, 'admin@sneakerlab.local');
   await page.goto('/admin');
@@ -29,7 +30,7 @@ test('an admin manages catalog, media validation, and allowed order status chang
   await page.goto('/admin/products/new');
   await page.getByLabel('Product name').fill(productName);
   await page.getByLabel('Slug').fill(productSlug);
-  await page.getByLabel('Price').fill('149.99');
+  await page.getByRole('spinbutton', { name: 'Price *', exact: true }).fill('149.99');
   await page.getByLabel('Default stock').fill('10');
   await page.getByRole('button', { name: 'Create product' }).click();
   await expect(page).toHaveURL(/\/admin\/products\/[0-9a-f-]+\/edit$/);
@@ -38,7 +39,7 @@ test('an admin manages catalog, media validation, and allowed order status chang
   await page.getByLabel('Color').fill('Cloud');
   await page.getByLabel('Size').fill('9');
   await page.getByLabel('Stock').last().fill('7');
-  await page.getByLabel('SKU').fill('E2E-ADMIN-CLOUD-9');
+  await page.getByLabel('SKU').fill(`E2E-ADMIN-CLOUD-9-${productSuffix}`);
   await page.getByRole('button', { name: 'Save product' }).click();
   await expect(page.getByText('Product saved.')).toBeVisible();
 
@@ -50,7 +51,7 @@ test('an admin manages catalog, media validation, and allowed order status chang
       mimeType: 'text/plain',
       buffer: Buffer.from('not-an-image'),
     });
-  await expect(page.getByRole('alert')).toHaveText(/Choose a JPEG, PNG, or WebP image/);
+  await expect(page.getByText('Choose a JPEG, PNG, or WebP image.', { exact: true })).toBeVisible();
 
   await page.goto('/products/' + productSlug);
   await expect(page.getByRole('heading', { name: productName })).toBeVisible();
@@ -61,7 +62,7 @@ test('an admin manages catalog, media validation, and allowed order status chang
   await expect(page.getByRole('status')).toHaveText('Order status updated.');
 
   await page.reload();
-  await expect(page.getByText('processing', { exact: true })).toBeVisible();
+  await expect(page.locator('#order-status')).toHaveValue('processing');
   await expect(page.locator('#order-status option[value="delivered"]')).toBeDisabled();
 
   await page.goto('/admin/products');

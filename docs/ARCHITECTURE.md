@@ -1,103 +1,104 @@
 # SneakerLab Architecture
 
-## Current overview
+## System overview
 
-SneakerLab is a pnpm workspace with a Next.js App Router application, a Flutter application, shared TypeScript domain contracts, and a Supabase directory with migrations, seed data, and database tests. The web storefront uses server-rendered, typed catalog reads when public Supabase configuration is available and renders a safe configuration state otherwise.
+SneakerLab is a pnpm workspace with a Next.js web application, Flutter customer app, shared TypeScript contracts, and a Supabase backend. The web application keeps privileged authorization decisions on the server. Browser and mobile applications use only the Supabase public URL, anonymous key, and their authenticated session.
 
 ```mermaid
 flowchart LR
-  Browser["Next.js web client"] --> PublicEnv["Public Supabase URL + anon key"]
-  Mobile["Flutter customer app"] --> PublicEnv
-  Browser --> Server["Next.js server routes / server components"]
-  Server --> Supabase["Supabase Auth, PostgreSQL, Storage"]
-  PublicEnv --> Supabase
-  Server --> Authz["Typed route authorization"]
+  Customer["Customer browser"] --> Storefront["Next.js storefront"]
+  Admin["Admin browser"] --> Dashboard["Next.js admin dashboard"]
+  CustomerMobile["Flutter customer app"] --> PublicApi["Supabase public API\nanon key + session"]
+  Storefront --> Server["Server components / actions"]
+  Dashboard --> Server
+  Storefront --> Web3D["Lazy client 3D viewer\nThree.js + R3F + Drei"]
+  CustomerMobile --> Mobile3D["Touch 3D viewer\nmodel-viewer"]
+  Server --> Supabase["Supabase Auth · PostgreSQL · Storage"]
+  PublicApi --> Supabase
+  Server --> RLS["RLS, RPCs, triggers\nand constraints"]
+  RLS --> Supabase
 ```
 
 ## Authentication and authorization
 
-- Browser authentication uses the anonymous-key Supabase client through a typed repository and service abstraction. This lets component tests use an in-memory fake rather than a live service.
-- Server-side protected pages resolve the authenticated user with the server client and make a typed decision for `account` or `admin` access. A proxy refreshes Supabase session cookies when the public configuration is available.
-- The server-only service-role key is not read by client code and is not required for the Phase 1 customer-facing runtime.
-- The `profiles` table and RLS-backed role lookup treat unavailable role data as non-admin. Favorite mutations authenticate on the server and query only the authenticated user's rows; a client never supplies a trusted user ID.
-
-## Folder structure
-
-```text
-apps/web/src/app/        Route components and route-level fallbacks
-apps/web/src/components/ Reusable UI, catalog, and auth components
-apps/web/src/lib/        Environment, Supabase, auth, catalog repositories, and utilities
-apps/mobile/lib/         Flutter app, core config, routing, and auth feature
-packages/shared-types/   Shared TypeScript role and catalog contracts
-supabase/migrations/     Ordered SQL migrations (Phase 2 onward)
-supabase/tests/          Database and security tests (Phase 2 onward)
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant C as Web or Flutter client
+  participant A as Supabase Auth
+  participant S as Next.js server
+  participant D as PostgreSQL + RLS
+  U->>C: Sign in with email and password
+  C->>A: Create session using public credentials
+  A-->>C: Session token
+  C->>S: Protected web request with session cookie
+  S->>A: Resolve current user
+  S->>D: Read profile role and requested data
+  D-->>S: RLS-scoped response
+  S-->>C: Authorized page or safe redirect
 ```
 
-## Catalog data flow
+- Customer code never reads a service-role key or supplies a trusted user ID for owner-scoped data.
+- Every web admin route checks the session and profile role in the server layout and again in each server action.
+- PostgreSQL RLS is the final authority: a customer cannot bypass UI checks to write catalog data, another profile, favorites, cart items, or orders.
+- `create_order_from_cart` resolves `auth.uid()`, derives price and stock from database rows, locks the relevant rows, writes snapshots, and clears the cart atomically.
 
-Phase 2 provides Supabase schema, RLS, storage policies, deterministic seed data, and generated-type-compatible contracts. Phase 3 centralizes raw catalog queries in `apps/web/src/lib/catalog/catalog-repository.ts`; route components only consume typed products, facets, filters, and favorite IDs.
+## Customer commerce flow
 
 ```mermaid
 flowchart LR
-  URL["URL search parameters"] --> FilterParser["Typed filter parser"]
-  FilterParser --> CatalogRoute["Server catalog route"]
-  CatalogRoute --> CatalogRepo["Catalog repository"]
-  CatalogRepo --> RLS["Supabase RLS-backed reads"]
-  RLS --> CatalogRoute
-  CatalogRoute --> Cards["Product cards and detail pages"]
-  FavoriteAction["Server favorite action"] --> RLS
+  Browse["Catalog and filters"] --> Detail["Product detail"]
+  Detail --> Variant["Select available variant"]
+  Detail --> Model["Optional 3D preview"]
+  Variant --> Cart["Guest local cart or RLS cart"]
+  Cart --> Login{"Signed in?"}
+  Login -- No --> SignIn["Internal safe sign-in return"]
+  Login -- Yes --> Checkout["Demo checkout form"]
+  Checkout --> Rpc["create_order_from_cart RPC"]
+  Rpc --> Order["Immutable order snapshot"]
+  Order --> History["Owner-scoped order history"]
 ```
 
-Every public product query explicitly scopes to active products. Filtering, sorting, and pagination execute in Supabase; the browser receives only the resulting page rather than a complete catalog. Anonymous favorite links preserve an internal, validated continuation path to sign-in.
+Guest-cart prices are display-only. The checkout RPC uses the current database price and validates stock just before order creation. Variant items decrement variant stock; non-variant items decrement product stock, never both.
 
-## Cart, checkout, and order flow
-
-Guest cart lines are stored in browser local storage as identifiers plus display-only snapshots. Their price and availability are never trusted at checkout. After sign-in, the customer is offered a deterministic merge into RLS-owned `cart_items`; each accepted line is rechecked against the active product and selected variant stock.
+## Admin media and catalog flow
 
 ```mermaid
 flowchart LR
-  Guest["Guest cart: local storage"] --> Merge["Validated server merge"]
-  UserCart["RLS-owned cart_items"] --> Checkout["React Hook Form + Zod"]
-  Checkout --> RPC["create_order_from_cart RPC"]
-  RPC --> Lock["Lock cart, product, and variant rows"]
-  Lock --> Snapshot["Create order + item snapshots"]
-  Snapshot --> Decrement["Decrement exactly one stock source"]
-  Decrement --> Clear["Clear cart atomically"]
+  Admin["Authenticated admin"] --> Form["Validated product/category/variant form"]
+  Form --> Action["Server action role check"]
+  Action --> RLS["Admin RLS policy"]
+  Admin --> Upload["Browser upload with admin session"]
+  Upload --> Storage["Storage policy"]
+  Storage --> Link["Server action links model/image URL"]
+  Link --> Products["products / product_images"]
+  Products --> Viewer["Public detail page uses optional model URL"]
 ```
 
-The checkout RPC derives the customer from `auth.uid()`, derives monetary values from current database prices, and locks rows before checking stock. Variant lines decrement variant stock; non-variant lines decrement product stock, never both. A per-user idempotency UUID is unique on `orders`, so retrying the same checkout returns the original order rather than creating a duplicate. Order lookups always scope to the authenticated owner.
+Images accept JPEG, PNG, or WebP up to 5 MB. GLB/glTF model uploads accept up to 20 MB and are stored separately. The admin screen allows a model to be replaced or unlinked; it does not expose a service-role credential.
 
-Profile name edits are server-authorized and never expose protected fields. Avatar uploads accept only JPEG/PNG/WebP under 2 MB, write only to the authenticated user's private Storage path, and save only that path in the profile; signed URLs are generated server-side for display.
-
-## Admin commerce management
-
-Every admin route renders inside an authenticated server layout. The layout resolves the current user and profile role before any dashboard data query; the same role check occurs again in every admin server action. Database RLS remains the final authorization boundary, so invoking a server action directly as a customer cannot create or modify catalog, category, media, or order records.
+## 3D rendering behavior
 
 ```mermaid
-flowchart LR
-  AdminBrowser["Signed-in admin browser"] --> AdminRoute["Server admin route"]
-  AdminRoute --> ProfileRole["profiles role lookup"]
-  ProfileRole --> AdminRepo["Typed admin repository"]
-  AdminRepo --> AdminRLS["Admin RLS policies"]
-  AdminBrowser --> AdminAction["Server action"]
-  AdminAction --> ProfileRole
-  AdminAction --> AdminRLS
-  MediaUpload["Browser Storage upload"] --> StorageRLS["Storage admin path/MIME policy"]
-  MediaUpload --> AdminAction
-  AdminAction --> OrderTrigger["Database status-transition trigger"]
+flowchart TD
+  URL["product.model_3d_url"] --> HasModel{"Model URL exists?"}
+  HasModel -- No --> ImageFallback["Accessible image fallback"]
+  HasModel -- Yes --> Motion{"Reduced motion?"}
+  Motion -- Yes --> OptIn["Static fallback + explicit enable"]
+  Motion -- No --> Lazy["Lazy-load 3D renderer"]
+  OptIn --> Lazy
+  Lazy --> Load{"GLB/glTF loads?"}
+  Load -- Yes --> Orbit["Orbit/touch rotation + zoom + reset"]
+  Load -- No --> ImageFallback
 ```
 
-Product and category forms normalize a deliberate slug, validate non-negative price and stock values, and let the unique database constraints resolve concurrent collisions. Product variant rows are validated as a whole form and retain stable IDs during updates. Product images are uploaded to products/{productId}/..., models to models/{productId}/..., then linked through a server action. The browser contains no service-role credential. A product is normally deactivated rather than deleted, and category deletion is deliberately absent while linked products exist.
+The web canvas is dynamically imported with SSR disabled, uses constrained orbit zoom and low-power rendering, and is isolated by an error boundary. The Flutter viewer accepts the bundled local example or HTTPS model URLs; it uses an image poster and leaves the product gallery usable if rendering is unavailable.
 
-Order status changes permit only pending to processing/cancelled, processing to shipped/cancelled, and shipped to delivered. The server action validates this policy for a useful error; the database trigger applies the same policy even when a client bypasses the UI. Order totals, addresses, and item snapshots remain immutable.
-
-## Phase 2 data and security model
-
-The database is the authority for prices, stock, roles, and orders. Customer clients can read public active catalog data and manage only their own profile, favorites, cart, and order history. They cannot insert an order or its items directly: `create_order_from_cart` derives the caller from `auth.uid()`, locks cart/catalog rows, calculates prices from the database, validates stock, writes immutable snapshots, decrements one consistent stock source, and clears the cart atomically.
+## Data model
 
 ```mermaid
 erDiagram
-  PROFILES ||--|| AUTH_USERS : "extends"
+  PROFILES ||--|| AUTH_USERS : extends
   CATEGORIES ||--o{ PRODUCTS : contains
   PRODUCTS ||--o{ PRODUCT_IMAGES : has
   PRODUCTS ||--o{ PRODUCT_VARIANTS : has
@@ -111,4 +112,4 @@ erDiagram
   PRODUCTS ||--o{ ORDER_ITEMS : references
 ```
 
-`public.is_admin()` is a security-definer helper that checks the current authenticated profile without recursive RLS. Profile role changes are blocked by a database trigger unless performed by an administrator or database owner. Storage similarly limits product assets to admins and avatars to the owning user UUID path.
+See [supabase/README.md](../supabase/README.md) for local migration, type-generation, and safe admin-assignment workflows.
