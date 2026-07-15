@@ -38,3 +38,14 @@ All items are **not tested** until a human performs them in the relevant environ
 - [ ] Put an inactive, deleted, or over-stocked line in a test cart through the local database and confirm checkout fails atomically with no partial order, no partial stock decrement, and no cart clear.
 - [ ] With two customer accounts, confirm each can view only their own `/orders` and `/orders/[orderNumber]`; an unknown or another customer's order number must not disclose its existence.
 - [ ] Upload a valid JPEG/PNG/WebP avatar under 2 MB and confirm it displays only to the owner. Attempt an unsupported type, oversized file, or another user's storage path and confirm it is rejected.
+
+## Phase 5 admin dashboard
+
+- [ ] Reset the local database, then sign in as admin@sneakerlab.local with the development-only password documented in the README. Confirm the dashboard metrics and latest seeded order load.
+- [ ] Sign in as customer@sneakerlab.local and navigate to /admin. Confirm the customer is redirected to /account and no admin records briefly render.
+- [ ] Create a product with a category, non-negative price/default stock, and a unique slug. Add/update/remove variants, then try negative and duplicate variant input; it must be rejected with a safe form message.
+- [ ] Upload JPEG, PNG, and WebP images under 5 MB. Confirm preview, reorder controls, replacement/removal, and a public product gallery update. Attempt an unsupported image or oversized image and confirm rejection before upload.
+- [ ] Upload a GLB/glTF model under 20 MB, confirm the preview link, then remove the product reference. Attempt a non-model or oversized file and confirm rejection.
+- [ ] Create/edit/deactivate a category and verify its linked-product count. Confirm there is no destructive category delete control while products are linked.
+- [ ] Create an active product and confirm it appears on /products. Deactivate it and confirm it disappears from public catalog, product detail, search, and related results.
+- [ ] Search the seeded SL-20260714-E2E00001 order, move it from pending to processing, then confirm delivered is unavailable until shipped. Try a direct invalid database update as an admin client and confirm the trigger rejects it.

@@ -1,6 +1,6 @@
 begin;
 
-select plan(24);
+select plan(31);
 
 select ok(exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'profiles'), 'profiles table exists');
 select ok(exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'products'), 'products table exists');
@@ -26,6 +26,13 @@ select ok(exists (select 1 from pg_trigger where tgrelid = 'auth.users'::regclas
 select ok(exists (select 1 from pg_trigger where tgrelid = 'public.cart_items'::regclass and tgname = 'cart_items_validate_variant'), 'cart variant integrity trigger exists');
 select is((select count(*) from public.categories), 4::bigint, 'seed creates four categories');
 select is((select count(*) from public.products), 10::bigint, 'seed creates ten products');
+select ok(exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'products' and policyname = 'products_admin_manage'), 'admin product policy exists');
+select ok(exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'categories' and policyname = 'categories_admin_manage'), 'admin category policy exists');
+select ok(exists (select 1 from storage.buckets where id = 'product-images' and public and file_size_limit = 5242880), 'public product image bucket has the image size limit');
+select ok(exists (select 1 from storage.buckets where id = 'product-models' and public and file_size_limit = 20971520), 'public model bucket has the model size limit');
+select is(public.is_valid_order_status_transition('pending', 'processing'), true, 'pending orders may move to processing');
+select is(public.is_valid_order_status_transition('pending', 'delivered'), false, 'pending orders cannot skip to delivered');
+select ok(exists (select 1 from pg_trigger where tgrelid = 'public.orders'::regclass and tgname = 'orders_enforce_status_transition'), 'database trigger enforces order transition rules');
 
 select * from finish();
 rollback;

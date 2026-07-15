@@ -69,6 +69,28 @@ The checkout RPC derives the customer from `auth.uid()`, derives monetary values
 
 Profile name edits are server-authorized and never expose protected fields. Avatar uploads accept only JPEG/PNG/WebP under 2 MB, write only to the authenticated user's private Storage path, and save only that path in the profile; signed URLs are generated server-side for display.
 
+## Admin commerce management
+
+Every admin route renders inside an authenticated server layout. The layout resolves the current user and profile role before any dashboard data query; the same role check occurs again in every admin server action. Database RLS remains the final authorization boundary, so invoking a server action directly as a customer cannot create or modify catalog, category, media, or order records.
+
+```mermaid
+flowchart LR
+  AdminBrowser["Signed-in admin browser"] --> AdminRoute["Server admin route"]
+  AdminRoute --> ProfileRole["profiles role lookup"]
+  ProfileRole --> AdminRepo["Typed admin repository"]
+  AdminRepo --> AdminRLS["Admin RLS policies"]
+  AdminBrowser --> AdminAction["Server action"]
+  AdminAction --> ProfileRole
+  AdminAction --> AdminRLS
+  MediaUpload["Browser Storage upload"] --> StorageRLS["Storage admin path/MIME policy"]
+  MediaUpload --> AdminAction
+  AdminAction --> OrderTrigger["Database status-transition trigger"]
+```
+
+Product and category forms normalize a deliberate slug, validate non-negative price and stock values, and let the unique database constraints resolve concurrent collisions. Product variant rows are validated as a whole form and retain stable IDs during updates. Product images are uploaded to products/{productId}/..., models to models/{productId}/..., then linked through a server action. The browser contains no service-role credential. A product is normally deactivated rather than deleted, and category deletion is deliberately absent while linked products exist.
+
+Order status changes permit only pending to processing/cancelled, processing to shipped/cancelled, and shipped to delivered. The server action validates this policy for a useful error; the database trigger applies the same policy even when a client bypasses the UI. Order totals, addresses, and item snapshots remain immutable.
+
 ## Phase 2 data and security model
 
 The database is the authority for prices, stock, roles, and orders. Customer clients can read public active catalog data and manage only their own profile, favorites, cart, and order history. They cannot insert an order or its items directly: `create_order_from_cart` derives the caller from `auth.uid()`, locks cart/catalog rows, calculates prices from the database, validates stock, writes immutable snapshots, decrements one consistent stock source, and clears the cart atomically.

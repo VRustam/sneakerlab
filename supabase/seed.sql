@@ -1,3 +1,99 @@
+-- Development-only deterministic identities for the local Playwright suite.
+-- These credentials are valid only after a local Supabase database reset.
+insert into auth.users (
+  instance_id,
+  id,
+  aud,
+  role,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at,
+  updated_at
+)
+values
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '90000000-0000-0000-0000-000000000001',
+    'authenticated',
+    'authenticated',
+    'admin@sneakerlab.local',
+    crypt('SneakerLabE2E123!', gen_salt('bf')),
+    timezone('utc', now()),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{"full_name":"SneakerLab Admin"}'::jsonb,
+    timezone('utc', now()),
+    timezone('utc', now())
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '90000000-0000-0000-0000-000000000002',
+    'authenticated',
+    'authenticated',
+    'customer@sneakerlab.local',
+    crypt('SneakerLabE2E123!', gen_salt('bf')),
+    timezone('utc', now()),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{"full_name":"SneakerLab Customer"}'::jsonb,
+    timezone('utc', now()),
+    timezone('utc', now())
+  )
+on conflict (id) do update
+set
+  encrypted_password = excluded.encrypted_password,
+  email_confirmed_at = excluded.email_confirmed_at,
+  raw_app_meta_data = excluded.raw_app_meta_data,
+  raw_user_meta_data = excluded.raw_user_meta_data,
+  updated_at = excluded.updated_at;
+
+insert into auth.identities (
+  id,
+  user_id,
+  identity_data,
+  provider,
+  provider_id,
+  last_sign_in_at,
+  created_at,
+  updated_at
+)
+values
+  (
+    '91000000-0000-0000-0000-000000000001',
+    '90000000-0000-0000-0000-000000000001',
+    '{"sub":"90000000-0000-0000-0000-000000000001","email":"admin@sneakerlab.local"}'::jsonb,
+    'email',
+    'admin@sneakerlab.local',
+    timezone('utc', now()),
+    timezone('utc', now()),
+    timezone('utc', now())
+  ),
+  (
+    '91000000-0000-0000-0000-000000000002',
+    '90000000-0000-0000-0000-000000000002',
+    '{"sub":"90000000-0000-0000-0000-000000000002","email":"customer@sneakerlab.local"}'::jsonb,
+    'email',
+    'customer@sneakerlab.local',
+    timezone('utc', now()),
+    timezone('utc', now()),
+    timezone('utc', now())
+  )
+on conflict (provider_id, provider) do update
+set
+  identity_data = excluded.identity_data,
+  user_id = excluded.user_id,
+  updated_at = excluded.updated_at;
+
+insert into public.profiles (id, full_name, role)
+values
+  ('90000000-0000-0000-0000-000000000001', 'SneakerLab Admin', 'admin'),
+  ('90000000-0000-0000-0000-000000000002', 'SneakerLab Customer', 'customer')
+on conflict (id) do update
+set
+  full_name = excluded.full_name,
+  role = excluded.role;
+
 insert into public.categories (id, name, slug, description, image_url, is_active)
 values
   ('10000000-0000-0000-0000-000000000001', 'Court', 'court', 'Clean low and mid profile sneakers for everyday rotation.', 'https://placehold.co/1200x800/png?text=Court', true),
@@ -75,3 +171,55 @@ set
   size = excluded.size,
   stock = excluded.stock,
   sku = excluded.sku;
+
+insert into public.orders (
+  id,
+  user_id,
+  order_number,
+  subtotal,
+  shipping_cost,
+  total,
+  status,
+  customer_name,
+  customer_email,
+  shipping_address
+)
+values (
+  '50000000-0000-0000-0000-000000000001',
+  '90000000-0000-0000-0000-000000000002',
+  'SL-20260714-E2E00001',
+  99.00,
+  0,
+  99.00,
+  'pending',
+  'SneakerLab Customer',
+  'customer@sneakerlab.local',
+  '{"addressLine1":"1 Test Court","addressLine2":"","city":"Oakland","region":"CA","postalCode":"94601","country":"US"}'::jsonb
+)
+on conflict (id) do nothing;
+
+insert into public.order_items (
+  id,
+  order_id,
+  product_id,
+  product_name,
+  product_image_url,
+  selected_size,
+  selected_color,
+  quantity,
+  unit_price,
+  total_price
+)
+values (
+  '51000000-0000-0000-0000-000000000001',
+  '50000000-0000-0000-0000-000000000001',
+  '20000000-0000-0000-0000-000000000009',
+  'Core Motion',
+  'https://placehold.co/1200x1200/png?text=Core+Motion',
+  null,
+  null,
+  1,
+  99.00,
+  99.00
+)
+on conflict (id) do nothing;

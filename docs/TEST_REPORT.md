@@ -107,4 +107,31 @@ pnpm exec supabase test db
 pnpm test:e2e
 ```
 
-The browser suite includes guest add/update/remove and anonymous checkout redirect coverage. Fully authenticated demo checkout, confirmation, order-history, duplicate-submit, and low-stock browser scenarios require a local authenticated test identity, which is intentionally not fabricated in source fixtures.
+The browser suite includes guest add/update/remove and anonymous checkout redirect coverage. A later Phase 5 local reset adds development-only authenticated fixtures for browser tests, but fully authenticated checkout scenarios remain unexecuted here because the sandbox prevents the test server from binding its port.
+
+## Phase 5
+
+| Command or check                                                              | Result                   | Notes                                                                                                                                                                                                |
+| ----------------------------------------------------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| pnpm lint                                                                     | passed                   | ESLint completed successfully after the admin routes, actions, and components were added.                                                                                                            |
+| pnpm typecheck                                                                | passed                   | Shared types and web TypeScript checks completed successfully.                                                                                                                                       |
+| pnpm test                                                                     | passed                   | Vitest: 24 files and 53 tests passed, including admin validation, slug/price/stock, variant row management, upload validation, status rules, confirmation dialog, and direct-action denial coverage. |
+| pnpm build                                                                    | passed                   | The Next.js Webpack build finished without an emitted error; BUILD_ID and manifests were present and the build lock cleared.                                                                         |
+| pnpm secret:scan                                                              | passed                   | No service-role key or obvious secret pattern was found in web/mobile source.                                                                                                                        |
+| pnpm format:check                                                             | passed                   | Prettier completed successfully.                                                                                                                                                                     |
+| git diff --check                                                              | passed                   | No whitespace errors were reported.                                                                                                                                                                  |
+| HOME=/tmp pnpm exec supabase db reset && HOME=/tmp pnpm exec supabase test db | blocked by local sandbox | The CLI reached the local project but this Codex sandbox was denied /var/run/docker.sock. The pgTAP suite did not run here, so the new 31 assertions are not recorded as passed.                     |
+| pnpm test:e2e                                                                 | blocked by local sandbox | Next start was denied 0.0.0.0:3100 with listen EPERM before Playwright could execute any scenario. The new authenticated admin suite is not a passing result.                                        |
+
+### Phase 5 remaining local validation
+
+Run these in a normal Terminal after Docker Desktop is available. Reset immediately before the browser suite because the deterministic admin flow changes seeded order status and deactivates its created product:
+
+```bash
+cd /Users/apple/Documents/Codex/SneakerLab
+pnpm exec supabase db reset
+pnpm exec supabase test db
+pnpm test:e2e
+```
+
+The local reset creates development-only admin@sneakerlab.local and customer@sneakerlab.local fixtures for the authenticated admin browser tests. They are local test data, not deployment credentials.
