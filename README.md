@@ -6,7 +6,7 @@ SneakerLab is being built as a secure demo-commerce platform: customers can disc
 
 ## Current status
 
-Phases 1–5 are complete: the monorepo, authentication shell, secure Supabase migrations, deterministic seed data, RLS policies, server-rendered catalog, user-owned favorites, guest and persistent carts, secure demo checkout, customer orders, profile editing, and a role-protected admin dashboard are in place. The admin panel provides catalog, variants, image/model Storage uploads, categories, metrics, and database-enforced order workflows. See [progress](docs/PROGRESS.md) and the truthful [test report](docs/TEST_REPORT.md).
+Phases 1–6 are complete. The platform includes secure Supabase migrations, deterministic seed data, RLS policies, server-rendered catalog, carts/orders, profile editing, a role-protected admin dashboard, and a Flutter customer app with matching catalog, favorite, cart, checkout, order, and account flows. The Phase 6 mobile quality gate passed in a normal local Terminal. See [progress](docs/PROGRESS.md) and the truthful [test report](docs/TEST_REPORT.md).
 
 ## Stack
 
@@ -91,4 +91,4 @@ flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...
 
 ## Known limitations
 
-Flutter customer features and the interactive 3D viewer are later phases. The Codex sandbox cannot bind the Playwright test server port, while its Docker and Flutter access are separately restricted; the exact commands and results are recorded in the test report.
+The interactive 3D viewer is a later phase. The Codex sandbox cannot bind the Playwright test server port and its x86_64 Dart VM crashes before Flutter analysis/tests can begin; the exact commands and results are recorded in the test report.

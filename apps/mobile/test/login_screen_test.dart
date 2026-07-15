@@ -15,7 +15,7 @@ void main() {
     );
 
     expect(find.text('Welcome back'), findsOneWidget);
-    await tester.tap(find.text('Sign in'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
     await tester.pump();
     expect(find.text('Enter a valid email address.'), findsOneWidget);
     expect(find.text('Use at least 8 characters.'), findsOneWidget);

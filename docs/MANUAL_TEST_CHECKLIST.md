@@ -49,3 +49,12 @@ All items are **not tested** until a human performs them in the relevant environ
 - [ ] Create/edit/deactivate a category and verify its linked-product count. Confirm there is no destructive category delete control while products are linked.
 - [ ] Create an active product and confirm it appears on /products. Deactivate it and confirm it disappears from public catalog, product detail, search, and related results.
 - [ ] Search the seeded SL-20260714-E2E00001 order, move it from pending to processing, then confirm delivered is unavailable until shipped. Try a direct invalid database update as an admin client and confirm the trigger rejects it.
+
+## Phase 6 Flutter customer application
+
+- [ ] Run `flutter analyze` and `flutter test` from `apps/mobile` after `flutter pub get`; record the real command output.
+- [ ] Launch on an Android emulator and iOS simulator with only `SUPABASE_URL` and `SUPABASE_ANON_KEY` Dart defines. Confirm there is no service-role or secret key in the application.
+- [ ] Register, sign in, restore a session after relaunch, request a password reset, and sign out. Confirm anonymous users cannot open Favorites, Cart, Checkout, Account, Orders, or an order detail URL.
+- [ ] Browse Home and Shop, use search, category, and price sort controls, open a product, choose an in-stock variant, save/remove a favorite, and confirm the same favorite appears on the dedicated Favorites tab.
+- [ ] Add a product to Cart, increase/decrease/remove it, restart the app, and confirm the signed-in user's cart is retained. Start a demo checkout and confirm the no-payment notice, validation messages, success navigation, and order-history/detail record.
+- [ ] Update a profile name, confirm email/account display and optional avatar behavior, then sign out. Repeat with a second account and confirm favorites, cart, orders, and profile stay private.

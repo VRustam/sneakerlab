@@ -5,7 +5,8 @@ void main() {
   group('routeRedirect', () {
     test('redirects anonymous users from protected screens', () {
       expect(routeRedirect(isAuthenticated: false, location: '/account'), '/login');
-      expect(routeRedirect(isAuthenticated: false, location: '/products'), '/login');
+      expect(routeRedirect(isAuthenticated: false, location: '/cart'), '/login');
+      expect(routeRedirect(isAuthenticated: false, location: '/orders/SL-1001'), '/login');
     });
 
     test('redirects authenticated users away from auth screens', () {

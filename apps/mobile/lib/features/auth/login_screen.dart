@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'auth_repository.dart';
 import 'auth_session.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -39,7 +38,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       setState(() => _error = error);
       return;
     }
-    ref.read(authSessionProvider.notifier).setAuthenticated(true);
+    ref.read(authSessionProvider.notifier).setUser(await repository.currentUser());
+    if (!mounted) return;
     context.go('/');
   }
 

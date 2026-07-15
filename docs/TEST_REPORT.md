@@ -135,3 +135,22 @@ pnpm test:e2e
 ```
 
 The local reset creates development-only admin@sneakerlab.local and customer@sneakerlab.local fixtures for the authenticated admin browser tests. They are local test data, not deployment credentials.
+
+## Phase 6
+
+| Command or check             | Result                           | Notes                                                                                                                                                                                            |
+| ---------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `flutter pub get`            | passed in the user's Terminal    | Dependencies resolved and `apps/mobile/pubspec.lock` is current.                                                                                                                                 |
+| `flutter analyze`            | not passed on the pre-fix source | The user's analyzer output identified syntax, Riverpod 3, PostgREST query-builder, and Flutter type errors. Those source issues were corrected afterward; this is not a passing analysis result. |
+| `flutter analyze` (post-fix) | passed in the user's Terminal    | Flutter reported `No issues found!` on the current mobile source.                                                                                                                                |
+| `flutter test` (post-fix)    | passed in the user's Terminal    | Flutter reported all 11 tests passed.                                                                                                                                                            |
+| Codex Flutter runner         | blocked by Codex sandbox         | The x86_64 Dart VM crashed in `cpuinfo_macos.cc` before it could inspect source; this does not invalidate the user-run local results above.                                                      |
+| `pnpm lint`                  | passed                           | ESLint completed successfully.                                                                                                                                                                   |
+| `pnpm typecheck`             | passed                           | Shared types and web TypeScript checks completed successfully.                                                                                                                                   |
+| `pnpm test`                  | passed                           | Vitest: 24 files and 53 tests passed.                                                                                                                                                            |
+| `pnpm build`                 | passed                           | Next.js 16.2.10 Webpack production build completed successfully.                                                                                                                                 |
+| `pnpm format:check`          | passed                           | Prettier reported all matched files correctly formatted.                                                                                                                                         |
+| `pnpm secret:scan`           | passed                           | No service-role key or obvious secret pattern was found in web/mobile source.                                                                                                                    |
+| `pnpm test:e2e`              | blocked in Codex sandbox         | `next start` was denied `0.0.0.0:3100` with `listen EPERM` before Playwright could execute a scenario.                                                                                           |
+
+Phase 6's mobile quality gate is complete. Browser E2E remains blocked only by the Codex sandbox's server-port restriction; it is not recorded as a passing result.

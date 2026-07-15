@@ -1,16 +1,29 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class AuthRepository {
+  Future<AppUser?> currentUser();
   Future<String?> signIn({required String email, required String password});
   Future<String?> register({required String email, required String password, required String fullName});
   Future<String?> requestPasswordReset(String email);
   Future<void> signOut();
 }
 
+class AppUser {
+  const AppUser({required this.id, required this.email});
+  final String id;
+  final String email;
+}
+
 class SupabaseAuthRepository implements AuthRepository {
   SupabaseAuthRepository(this._client);
 
   final SupabaseClient _client;
+
+  @override
+  Future<AppUser?> currentUser() async {
+    final user = _client.auth.currentUser;
+    return user == null ? null : AppUser(id: user.id, email: user.email ?? '');
+  }
 
   @override
   Future<String?> signIn({required String email, required String password}) async {
@@ -50,6 +63,9 @@ class FakeAuthRepository implements AuthRepository {
   FakeAuthRepository({this.error});
 
   final String? error;
+
+  @override
+  Future<AppUser?> currentUser() async => null;
 
   @override
   Future<String?> signIn({required String email, required String password}) async => error;

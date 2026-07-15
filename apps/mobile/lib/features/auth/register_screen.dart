@@ -43,7 +43,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       setState(() => _error = error);
       return;
     }
-    ref.read(authSessionProvider.notifier).setAuthenticated(true);
+    ref.read(authSessionProvider.notifier).setUser(await ref.read(authRepositoryProvider).currentUser());
+    if (!mounted) return;
     context.go('/');
   }
 

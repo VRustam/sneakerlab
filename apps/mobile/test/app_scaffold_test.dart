@@ -8,8 +8,16 @@ void main() {
     final router = GoRouter(routes: [GoRoute(path: '/', builder: (context, state) => const AppScaffold(title: 'Home', location: '/', body: Text('Home body')))]);
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
 
-    expect(find.text('Home'), findsOneWidget);
-    expect(find.text('Products'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Home'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Shop'), findsOneWidget);
+    expect(find.text('Favorites'), findsOneWidget);
+    expect(find.text('Cart'), findsOneWidget);
     expect(find.text('Account'), findsOneWidget);
   });
 }

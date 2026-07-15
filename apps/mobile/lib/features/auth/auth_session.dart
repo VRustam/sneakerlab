@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'auth_repository.dart';
 
-class AuthSession extends Notifier<bool> {
+class AuthSession extends Notifier<AppUser?> {
   @override
-  bool build() => false;
+  AppUser? build() => null;
 
-  void setAuthenticated(bool value) => state = value;
+  void setUser(AppUser? value) => state = value;
 }
 
-final authSessionProvider = NotifierProvider<AuthSession, bool>(AuthSession.new);
+final authSessionProvider = NotifierProvider<AuthSession, AppUser?>(AuthSession.new);
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) => FakeAuthRepository());
