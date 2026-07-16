@@ -13,10 +13,10 @@ const navigation = [
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
-      <PageContainer className="flex h-16 items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-background/75 backdrop-blur-xl">
+      <PageContainer className="flex h-[4.5rem] items-center justify-between gap-4">
         <Link
-          className="text-lg font-black tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="text-lg font-black tracking-[-0.06em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           href="/"
         >
           SneakerLab
@@ -24,7 +24,7 @@ export function SiteHeader() {
         <nav aria-label="Primary navigation" className="hidden items-center gap-6 md:flex">
           {navigation.map((item) => (
             <Link
-              className="text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="text-sm font-bold text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               href={item.href}
               key={item.href}
             >

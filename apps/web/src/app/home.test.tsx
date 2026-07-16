@@ -6,16 +6,16 @@ describe('HomePage', () => {
     render(await HomePage());
 
     expect(
-      screen.getByRole('heading', { name: 'Explore sneakers from every angle.' }),
+      screen.getByRole('heading', { name: 'Built to move. Made to be seen.' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /explore products/i })).toHaveAttribute(
       'href',
       '/products',
     );
-    expect(screen.getByRole('link', { name: /create an account/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /enter 3d preview/i })).toHaveAttribute(
       'href',
-      '/register',
+      '/products/pulse-layer',
     );
-    expect(screen.getByText('3D-ready details')).toBeInTheDocument();
+    expect(screen.getByText('Not just another gallery.')).toBeInTheDocument();
   });
 });

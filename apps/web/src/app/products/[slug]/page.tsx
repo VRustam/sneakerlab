@@ -86,7 +86,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const isFavorite = favoriteIds.has(product.id);
 
   return (
-    <PageContainer className="space-y-10 py-8 sm:py-12">
+    <PageContainer className="space-y-12 py-8 sm:py-12">
       <nav
         aria-label="Breadcrumb"
         className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground"
@@ -116,14 +116,14 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       </nav>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)] lg:gap-12">
         <ProductGallery product={product} />
-        <div className="space-y-7">
+        <div className="space-y-7 lg:py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-3">
-              <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">
                 {product.category?.name ?? 'SneakerLab'}
               </p>
-              <h1 className="text-4xl font-black tracking-tight sm:text-5xl">{product.name}</h1>
-              <p className="text-2xl font-bold">
+              <h1 className="text-5xl font-black tracking-[-0.06em] sm:text-6xl">{product.name}</h1>
+              <p className="text-2xl font-black tracking-tight">
                 {formatPrice(product.price)}
                 {product.compare_at_price && product.compare_at_price > product.price ? (
                   <span className="ml-3 text-base font-normal text-muted-foreground line-through">
@@ -133,7 +133,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               </p>
             </div>
             <FavoriteButton
-              className="shrink-0 rounded-md border border-border bg-card"
+              className="shrink-0 rounded-full border border-white/10 bg-card/75"
               isAuthenticated={Boolean(user)}
               isFavorite={isFavorite}
               productId={product.id}
@@ -150,21 +150,21 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             returnPath={returnPath}
             variants={product.variants}
           />
-          <Card className="bg-muted/30 shadow-none">
+          <Card className="rounded-2xl border-white/10 bg-muted/55 shadow-none">
             <CardContent className="flex gap-3 p-4 text-sm text-muted-foreground">
               <Truck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-primary" />
               <p>Demo store shipping: dispatched in 1–2 business days with easy 30-day returns.</p>
             </CardContent>
           </Card>
           <div className="space-y-2">
-            <details className="rounded-lg border border-border bg-card p-4">
+            <details className="rounded-2xl border border-white/10 bg-card/75 p-4">
               <summary className="cursor-pointer font-semibold">Shipping and returns</summary>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
                 Orders in this portfolio demo use a transparent flat-rate shipping policy. Returns
                 are accepted within 30 days when products are unworn.
               </p>
             </details>
-            <details className="rounded-lg border border-border bg-card p-4">
+            <details className="rounded-2xl border border-white/10 bg-card/75 p-4">
               <summary className="cursor-pointer font-semibold">Care guidance</summary>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
                 Brush away dry dirt, clean gently with a soft cloth, and air dry away from direct
@@ -172,13 +172,13 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               </p>
             </details>
           </div>
-          <ProductModelViewer
-            fallbackImage={getProductImage(product)}
-            modelUrl={product.model_3d_url}
-            productName={product.name}
-          />
         </div>
       </div>
+      <ProductModelViewer
+        fallbackImage={getProductImage(product)}
+        modelUrl={product.model_3d_url}
+        productName={product.name}
+      />
       {relatedProducts.length > 0 ? (
         <section className="space-y-5" aria-labelledby="related-products-title">
           <div>

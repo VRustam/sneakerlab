@@ -193,3 +193,20 @@ Phase 6's mobile quality gate is complete. Browser E2E remains blocked only by t
 ### Phase 7 acceptance status
 
 The automated Phase 7 quality gate is complete. Android and iOS runners are tracked in the repository; device 3D interaction and fallback checks remain documented manual release checks in `MANUAL_TEST_CHECKLIST.md`. Follow [deployment guidance](DEPLOYMENT.md#flutter-release-configuration) before a release build.
+
+## Post-acceptance visual and 3D refresh
+
+| Command or check              | Result                   | Notes                                                                                                                                                                                                                             |
+| ----------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm exec supabase db reset` | passed                   | Clean local reset applied all migrations and refreshed the generated product imagery plus the optimized 3D model URL.                                                                                                             |
+| `pnpm exec supabase test db`  | passed                   | pgTAP: 1 file and all 32 assertions passed.                                                                                                                                                                                       |
+| `pnpm test`                   | passed twice             | Each independent run completed 25 files and 54 tests. The admin variant-row test now uses a synchronous click for its synchronous state transition, removing an intermittent worker-load timeout.                                 |
+| `pnpm format:check`           | passed                   | Prettier reported all matched files formatted.                                                                                                                                                                                    |
+| `pnpm lint`                   | passed                   | ESLint completed successfully.                                                                                                                                                                                                    |
+| `pnpm typecheck`              | passed                   | Shared types and web TypeScript checks completed successfully.                                                                                                                                                                    |
+| `pnpm secret:scan`            | passed                   | No service-role key or obvious secret pattern was found in web/mobile source.                                                                                                                                                     |
+| `pnpm build`                  | passed                   | Next.js 16.2.10 Webpack production build completed successfully.                                                                                                                                                                  |
+| Browser visual check          | passed                   | The local production page rendered the optimized, textured GLB sneaker in the live WebGL canvas at `/products/pulse-layer#three-d-preview`.                                                                                       |
+| `pnpm test:e2e`               | blocked by Codex sandbox | Playwright discovered all 16 scenarios, but macOS denied Chromium Mach-port registration (`MachPortRendezvousServer ... Permission denied (1100)`) before app assertions could run. This is not recorded as a passing E2E result. |
+
+The refreshed 3D model is a 1.4 MB, 1024px-texture derivative of Khronos' CC BY 4.0 **Materials Variants Shoe**. Its attribution is retained in `apps/web/public/models/ATTRIBUTION.md`.

@@ -51,7 +51,7 @@ function ModelImageFallback({
   message,
 }: Omit<ProductModelViewerProps, 'modelUrl'> & { message: string }) {
   return (
-    <div className="relative aspect-square overflow-hidden rounded-xl border border-border bg-muted">
+    <div className="relative aspect-square overflow-hidden rounded-[1.75rem] border border-white/10 bg-muted">
       <Image
         alt={fallbackImage.alt}
         className="object-cover"
@@ -59,7 +59,7 @@ function ModelImageFallback({
         sizes="(min-width: 1024px) 28rem, 100vw"
         src={fallbackImage.src}
       />
-      <div className="absolute inset-x-3 bottom-3 rounded-lg bg-background/95 p-3 shadow-sm backdrop-blur">
+      <div className="absolute inset-x-3 bottom-3 rounded-2xl border border-white/10 bg-background/85 p-3 shadow-lg backdrop-blur">
         <div className="flex items-start gap-2">
           <Box aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-primary" />
           <p className="text-sm leading-5 text-foreground">
@@ -89,13 +89,17 @@ export function ProductModelViewer({
     Boolean(modelUrl) && !hasModelError && (!prefersReducedMotion || hasEnabledMotion);
 
   return (
-    <section aria-label={`${productName} 3D preview`} className="space-y-3">
+    <section
+      aria-label={`${productName} 3D preview`}
+      className="mx-auto max-w-5xl space-y-4 rounded-[2rem] border border-white/10 bg-card/55 p-5 shadow-[0_30px_70px_-42px_rgba(0,0,0,0.95)] sm:p-6"
+      id="three-d-preview"
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
-            Interactive detail
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+            Interactive object
           </p>
-          <h2 className="mt-1 text-xl font-bold">3D product preview</h2>
+          <h2 className="mt-1 text-2xl font-black tracking-[-0.04em]">3D product preview</h2>
         </div>
         {shouldShowScene ? (
           <Button
@@ -124,6 +128,7 @@ export function ProductModelViewer({
         />
       ) : shouldShowScene ? (
         <ProductModelScene
+          fallbackImage={fallbackImage}
           key={`${modelUrl}-${resetVersion}`}
           modelUrl={modelUrl}
           onError={() => setModelErrorFor(modelUrl)}
@@ -142,8 +147,8 @@ export function ProductModelViewer({
       )}
 
       <p className="text-sm leading-6 text-muted-foreground">
-        Drag to rotate, use the scroll wheel or pinch gesture to zoom, and use Reset view to return
-        to the default angle. Product details and checkout controls remain available below.
+        The silhouette rotates on its own. Drag to rotate, use the scroll wheel or pinch gesture to
+        zoom, and reset whenever you want the original angle back.
       </p>
     </section>
   );

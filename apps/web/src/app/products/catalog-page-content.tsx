@@ -75,14 +75,16 @@ export async function CatalogPageContent({
   const nextPage = getCatalogHref({ ...filters, page: filters.page + 1 }, actionPath);
 
   return (
-    <PageContainer className="space-y-8 py-10 sm:py-14">
-      <PageHeader
-        eyebrow={lockedCategory ? 'Category collection' : 'Catalog'}
-        title={lockedCategory ? `${lockedCategory} sneakers` : 'Find your next pair'}
-        description="Search the active SneakerLab catalog by category, size, color, price, and featured status."
-      />
+    <PageContainer className="space-y-8 py-8 sm:py-12">
+      <div className="rounded-[2rem] border border-white/10 bg-[linear-gradient(120deg,rgba(21,39,35,0.98),rgba(10,18,19,0.9)_55%,rgba(20,35,58,0.92))] p-6 shadow-[0_28px_70px_-40px_rgba(0,0,0,0.95)] sm:p-9">
+        <PageHeader
+          eyebrow={lockedCategory ? 'Category collection' : 'Curated rotation'}
+          title={lockedCategory ? `${lockedCategory} sneakers` : 'Find your next pair'}
+          description="Built for movement. Filter the live rotation by fit, palette, price, and purpose."
+        />
+      </div>
       <div className="grid gap-7 lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start">
-        <aside aria-label="Product filters" className="lg:sticky lg:top-24">
+        <aside aria-label="Product filters" className="order-2 lg:sticky lg:top-24 lg:order-1">
           <CatalogFilterForm
             actionPath={actionPath}
             facets={catalog.facets}
@@ -90,17 +92,20 @@ export async function CatalogPageContent({
             lockedCategory={lockedCategory}
           />
         </aside>
-        <section className="min-w-0 space-y-5" aria-labelledby="catalog-results-title">
+        <section
+          className="order-1 min-w-0 space-y-5 lg:order-2"
+          aria-labelledby="catalog-results-title"
+        >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-muted-foreground">
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-muted-foreground">
                 {catalog.totalCount} {catalog.totalCount === 1 ? 'product' : 'products'} found
               </p>
               <h2 className="sr-only" id="catalog-results-title">
                 Catalog results
               </h2>
             </div>
-            <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-card/60 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
               <SlidersHorizontal aria-hidden="true" className="size-4" />
               Filters update the URL
             </span>

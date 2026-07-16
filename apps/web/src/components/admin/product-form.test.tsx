@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { ProductForm } from '@/components/admin/product-form';
@@ -18,15 +18,14 @@ describe('ProductForm', () => {
     saveProductAction.mockResolvedValue({ success: 'Product created.' });
   });
 
-  it('lets an admin add and remove a variant row before save', async () => {
-    const user = userEvent.setup();
+  it('lets an admin add and remove a variant row before save', () => {
     render(<ProductForm categories={[]} />);
 
-    await user.click(screen.getByRole('button', { name: 'Add variant' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add variant' }));
     expect(screen.getByRole('button', { name: 'Remove variant 1' })).toBeInTheDocument();
     expect(screen.getByText('Variant 1')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Remove variant 1' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove variant 1' }));
     expect(screen.queryByText('Variant 1')).not.toBeInTheDocument();
     expect(screen.getByText('No variants yet. Default stock will be used.')).toBeInTheDocument();
   });

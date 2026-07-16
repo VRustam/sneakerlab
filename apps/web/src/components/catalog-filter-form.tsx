@@ -12,7 +12,7 @@ interface CatalogFilterFormProps {
 }
 
 const selectClassName =
-  'h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+  'h-11 w-full rounded-xl border border-input bg-background/70 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
 export function CatalogFilterForm({
   actionPath,
@@ -28,7 +28,7 @@ export function CatalogFilterForm({
   return (
     <form
       action={actionPath}
-      className="grid gap-4 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:block lg:space-y-4 lg:p-5"
+      className="grid gap-4 rounded-[1.5rem] border border-white/10 bg-card/85 p-4 shadow-[0_20px_50px_-35px_rgba(0,0,0,0.9)] sm:grid-cols-2 lg:block lg:space-y-4 lg:p-5"
     >
       <div className="sm:col-span-2 lg:col-span-1">
         <label className="mb-2 block text-sm font-semibold" htmlFor="catalog-search">

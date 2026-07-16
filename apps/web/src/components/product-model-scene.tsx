@@ -1,12 +1,17 @@
 'use client';
 
-import { Center, Html, OrbitControls, useGLTF, useProgress } from '@react-three/drei';
+import { Center, ContactShadows, OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
-import { Component, type ReactNode, Suspense, useEffect, useMemo } from 'react';
+import Image from 'next/image';
+import { Component, Suspense, type ReactNode } from 'react';
 
 interface ProductModelSceneProps {
   modelUrl: string;
   onError: () => void;
+  fallbackImage: {
+    src: string;
+    alt: string;
+  };
 }
 
 interface SceneErrorBoundaryProps {
@@ -34,56 +39,81 @@ class SceneErrorBoundary extends Component<SceneErrorBoundaryProps, SceneErrorBo
   }
 }
 
-function ModelLoadingState() {
-  const { progress } = useProgress();
+function CanvasUnavailable({ fallbackImage }: Pick<ProductModelSceneProps, 'fallbackImage'>) {
   return (
-    <Html center>
-      <p className="rounded-lg border border-border bg-background/95 px-3 py-2 text-sm font-medium shadow-sm">
-        Loading 3D model{progress > 0 ? ` ${Math.round(progress)}%` : ''}…
-      </p>
-    </Html>
+    <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_22%_18%,rgba(104,119,255,0.33),transparent_26%),radial-gradient(circle_at_82%_78%,rgba(188,255,78,0.16),transparent_30%),linear-gradient(145deg,#101a22,#05090c_65%)]">
+      <div className="absolute inset-0 bg-[linear-gradient(130deg,transparent,rgba(255,255,255,0.04),transparent)]" />
+      <Image
+        alt={fallbackImage.alt}
+        className="relative h-[82%] w-[82%] object-contain [filter:drop-shadow(0_28px_30px_rgba(0,0,0,0.62))] [transform-style:preserve-3d] animate-[sneaker-orbit_7s_ease-in-out_infinite]"
+        height={960}
+        priority
+        src={fallbackImage.src}
+        width={960}
+      />
+      <div className="pointer-events-none absolute left-5 top-5 rounded-full border border-white/15 bg-black/20 px-3 py-1 text-[0.64rem] font-bold uppercase tracking-[0.18em] text-white/65 backdrop-blur">
+        Motion preview
+      </div>
+    </div>
   );
 }
 
-function ModelAsset({ modelUrl }: Pick<ProductModelSceneProps, 'modelUrl'>) {
+function CommerceShoe({ modelUrl }: Pick<ProductModelSceneProps, 'modelUrl'>) {
   const { scene } = useGLTF(modelUrl);
-  const model = useMemo(() => scene.clone(true), [scene]);
 
   return (
-    <Center>
-      <primitive dispose={null} object={model} scale={1.1} />
-    </Center>
+    <group position={[0, -0.72, 0]} rotation={[0.08, -0.38, 0]} scale={14}>
+      <primitive object={scene} />
+    </group>
   );
 }
 
-function CanvasUnavailable({ onError }: Pick<ProductModelSceneProps, 'onError'>) {
-  useEffect(() => onError(), [onError]);
-  return null;
-}
-
-export function ProductModelScene({ modelUrl, onError }: ProductModelSceneProps) {
+export function ProductModelScene({ fallbackImage, modelUrl, onError }: ProductModelSceneProps) {
   return (
-    <div className="aspect-square overflow-hidden rounded-xl border border-border bg-gradient-to-br from-muted via-background to-muted/70">
+    <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] border border-white/10 bg-[radial-gradient(circle_at_22%_18%,rgba(104,119,255,0.33),transparent_26%),radial-gradient(circle_at_82%_78%,rgba(188,255,78,0.16),transparent_30%),linear-gradient(145deg,#101a22,#05090c_65%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_26px_60px_-32px_rgba(0,0,0,0.9)] sm:aspect-[16/10]">
+      <div className="pointer-events-none absolute left-5 top-5 z-10 rounded-full border border-white/15 bg-black/20 px-3 py-1 text-[0.64rem] font-bold uppercase tracking-[0.18em] text-white/65 backdrop-blur">
+        Live 3D
+      </div>
       <Canvas
-        camera={{ fov: 34, position: [3.8, 2.6, 5] }}
-        dpr={[1, 1.75]}
-        fallback={<CanvasUnavailable onError={onError} />}
-        frameloop="demand"
-        gl={{ antialias: true, powerPreference: 'low-power' }}
+        camera={{ fov: 33, position: [4.8, 2.7, 6.8] }}
+        dpr={[1, 1.4]}
+        fallback={<CanvasUnavailable fallbackImage={fallbackImage} />}
+        gl={{ antialias: true, powerPreference: 'high-performance' }}
+        shadows
       >
-        <ambientLight intensity={1.2} />
-        <directionalLight intensity={2.2} position={[4, 5, 3]} />
-        <directionalLight color="#b9d8ff" intensity={1.1} position={[-4, 1, -3]} />
+        <color args={['#071016']} attach="background" />
+        <ambientLight intensity={0.58} />
+        <directionalLight
+          castShadow
+          color="#dce7ff"
+          intensity={2.4}
+          position={[4, 6, 4]}
+          shadow-mapSize={[1024, 1024]}
+        />
+        <directionalLight color="#6877ff" intensity={2.1} position={[-4, 2, -3]} />
+        <pointLight color="#b9ff6b" intensity={1.15} position={[1, -1, 3]} />
         <SceneErrorBoundary onError={onError}>
-          <Suspense fallback={<ModelLoadingState />}>
-            <ModelAsset modelUrl={modelUrl} />
+          <Suspense fallback={null}>
+            <Center>
+              <CommerceShoe modelUrl={modelUrl} />
+            </Center>
+            <ContactShadows
+              blur={2.8}
+              color="#000000"
+              far={4.5}
+              opacity={0.78}
+              position={[0, -1.16, 0]}
+              scale={8}
+            />
           </Suspense>
         </SceneErrorBoundary>
         <OrbitControls
+          autoRotate
+          autoRotateSpeed={0.72}
           enableDamping
           enablePan={false}
-          maxDistance={7}
-          minDistance={2.5}
+          maxDistance={8}
+          minDistance={3.4}
           target={[0, 0, 0]}
         />
       </Canvas>
