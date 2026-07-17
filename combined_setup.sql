@@ -99,13 +99,14 @@ create table public.orders (
   order_number text not null unique check (order_number ~ '^SL-[0-9]{8}-[A-Z0-9]{8}$'),
   subtotal numeric(12, 2) not null check (subtotal >= 0),
   shipping_cost numeric(12, 2) not null default 0 check (shipping_cost >= 0),
-  total numeric(12, 2) not null check (total >= 0 and total = round(subtotal + shipping_cost, 2)),
+  total numeric(12, 2) not null,
   status text not null default 'pending' check (status in ('pending', 'processing', 'shipped', 'delivered', 'cancelled')),
   customer_name text not null check (char_length(trim(customer_name)) > 0),
   customer_email text not null check (customer_email ~ '^[^@[:space:]]+@[^@[:space:]]+[.][^@[:space:]]+$'),
   shipping_address jsonb not null check (jsonb_typeof(shipping_address) = 'object'),
   created_at timestamptz not null default timezone('utc', now()),
-  updated_at timestamptz not null default timezone('utc', now())
+  updated_at timestamptz not null default timezone('utc', now()),
+  constraint orders_total_check check (total >= 0 and total = round(subtotal + shipping_cost, 2))
 );
 
 create table public.order_items (
