@@ -560,6 +560,22 @@ set
   file_size_limit = excluded.file_size_limit,
   allowed_mime_types = excluded.allowed_mime_types;
 
+-- Drop existing storage policies if they exist
+drop policy if exists "product_images_public_read" on storage.objects;
+drop policy if exists "product_images_admin_insert" on storage.objects;
+drop policy if exists "product_images_admin_update" on storage.objects;
+drop policy if exists "product_images_admin_delete" on storage.objects;
+
+drop policy if exists "product_models_public_read" on storage.objects;
+drop policy if exists "product_models_admin_insert" on storage.objects;
+drop policy if exists "product_models_admin_update" on storage.objects;
+drop policy if exists "product_models_admin_delete" on storage.objects;
+
+drop policy if exists "avatars_read_own" on storage.objects;
+drop policy if exists "avatars_insert_own" on storage.objects;
+drop policy if exists "avatars_update_own" on storage.objects;
+drop policy if exists "avatars_delete_own" on storage.objects;
+
 create policy "product_images_public_read"
 on storage.objects for select to public
 using (bucket_id = 'product-images');
