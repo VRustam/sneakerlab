@@ -37,8 +37,8 @@ class SupabaseAuthRepository implements AuthRepository {
     try {
       await _client.auth.signInWithPassword(email: email, password: password);
       return null;
-    } on AuthException {
-      return 'We could not complete that request. Check your details and try again.';
+    } on AuthException catch (e) {
+      return e.message;
     }
   }
 
@@ -55,8 +55,8 @@ class SupabaseAuthRepository implements AuthRepository {
         data: {'full_name': fullName},
       );
       return null;
-    } on AuthException {
-      return 'We could not complete that request. Check your details and try again.';
+    } on AuthException catch (e) {
+      return e.message;
     }
   }
 
@@ -65,8 +65,8 @@ class SupabaseAuthRepository implements AuthRepository {
     try {
       await _client.auth.resetPasswordForEmail(email);
       return null;
-    } on AuthException {
-      return 'We could not complete that request. Check your details and try again.';
+    } on AuthException catch (e) {
+      return e.message;
     }
   }
 
