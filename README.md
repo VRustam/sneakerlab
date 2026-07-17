@@ -2,6 +2,8 @@
 
 > A secure, full-stack sneaker commerce portfolio with an interactive 3D product experience on web and mobile.
 
+**🔗 Live Web Demo:** [sneakerlab-web.vercel.app](https://sneakerlab-web.vercel.app)
+
 SneakerLab is a deliberately small but production-minded commerce system. Customers can discover generic sneaker products, save favorites, manage a cart, place a **demo-only** checkout, inspect orders, and explore a supported product in 3D. A role-protected admin dashboard and Flutter customer application share one Supabase backend.
 
 ## What it demonstrates
