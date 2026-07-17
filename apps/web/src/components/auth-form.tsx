@@ -76,7 +76,7 @@ export function AuthForm({ mode, authService }: AuthFormProps) {
           : await service.requestPasswordReset({ email: values.email });
 
     if (result.error) {
-      setSubmissionError('We could not complete that request. Check your details and try again.');
+      setSubmissionError(result.error);
       return;
     }
     setSuccessMessage(labels.success);
