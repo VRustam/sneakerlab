@@ -13,7 +13,7 @@ const unavailableMessage =
 const safeAuthError = 'We could not complete that request. Check your details and try again.';
 
 function errorResult(error: { message?: string } | null): AuthResult {
-  return error ? { error: safeAuthError } : {};
+  return error ? { error: error.message ?? safeAuthError } : {};
 }
 
 export class SupabaseAuthRepository implements AuthRepository {
