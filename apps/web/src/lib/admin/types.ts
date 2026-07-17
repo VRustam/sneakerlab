@@ -41,3 +41,13 @@ export interface AdminPage<T> {
   totalCount: number;
   hasNextPage: boolean;
 }
+
+export interface AdminAnalytics {
+  totalRevenue: number;
+  totalOrders: number;
+  avgOrderValue: number;
+  totalProductsSold: number;
+  revenueByDay: { date: string; revenue: number; orders: number }[];
+  revenueByCategory: { name: string; value: number; count: number }[];
+  topProducts: { name: string; quantity: number; revenue: number }[];
+}

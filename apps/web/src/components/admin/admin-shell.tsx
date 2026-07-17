@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, ReceiptText, Shapes } from 'lucide-react';
+import { BarChart3, LayoutDashboard, Package, ReceiptText, Shapes, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { LogoutButton } from '@/components/logout-button';
 
@@ -7,6 +7,8 @@ const navigation = [
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/categories', label: 'Categories', icon: Shapes },
   { href: '/admin/orders', label: 'Orders', icon: ReceiptText },
+  { href: '/admin/coupons', label: 'Coupons', icon: Ticket },
+  { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
 ];
 
 export function AdminShellNavigation() {

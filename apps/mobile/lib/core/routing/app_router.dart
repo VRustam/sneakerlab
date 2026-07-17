@@ -1,6 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/account/account_screen.dart';
+import '../../features/admin/admin_dashboard_screen.dart';
+import '../../features/admin/admin_orders_screen.dart';
+import '../../features/admin/admin_products_screen.dart';
+import '../../features/ai_chat/ai_chat_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart';
 import '../../features/auth/forgot_password_screen.dart';
@@ -8,6 +12,7 @@ import '../../features/auth/auth_session.dart';
 import '../../features/catalog/products_screen.dart';
 import '../../features/catalog/product_detail_screen.dart';
 import '../../features/home/home_screen.dart';
+import '../../features/search/search_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/favorites/favorites_screen.dart';
 import '../../features/cart/cart_screen.dart';
@@ -24,6 +29,11 @@ String? routeRedirect({
     '/checkout',
     '/account',
     '/orders',
+    '/admin',
+    '/admin/products',
+    '/admin/orders',
+    '/admin/coupons',
+    '/admin/analytics',
   };
   const authLocations = {'/login', '/register', '/forgot-password'};
 
@@ -74,6 +84,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             ProductDetailScreen(slug: state.pathParameters['slug']!),
       ),
       GoRoute(
+        path: '/search',
+        builder: (context, state) => const SearchScreen(),
+      ),
+      GoRoute(
+        path: '/ai-chat',
+        builder: (context, state) => const AiChatScreen(),
+      ),
+      GoRoute(
         path: '/favorites',
         builder: (context, state) => const FavoritesScreen(),
       ),
@@ -95,6 +113,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/account',
         builder: (context, state) => const AccountScreen(),
       ),
+      // Admin routes
+      GoRoute(
+        path: '/admin',
+        builder: (context, state) => const AdminDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/admin/products',
+        builder: (context, state) => const AdminProductsScreen(),
+      ),
+      GoRoute(
+        path: '/admin/orders',
+        builder: (context, state) => const AdminOrdersScreen(),
+      ),
     ],
   );
 });
+

@@ -15,10 +15,12 @@ class AppScaffold extends StatelessWidget {
 
   int get _selectedIndex {
     return switch (location) {
-      '/products' => 1,
-      '/favorites' => 2,
-      '/cart' => 3,
-      '/account' => 4,
+      '/search' => 1,
+      '/products' => 2,
+      '/favorites' => 3,
+      '/cart' => 4,
+      '/ai-chat' => 5,
+      '/account' => 6,
       _ => 0,
     };
   }
@@ -32,10 +34,12 @@ class AppScaffold extends StatelessWidget {
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
           final destination = switch (index) {
-            1 => '/products',
-            2 => '/favorites',
-            3 => '/cart',
-            4 => '/account',
+            1 => '/search',
+            2 => '/products',
+            3 => '/favorites',
+            4 => '/cart',
+            5 => '/ai-chat',
+            6 => '/account',
             _ => '/',
           };
           context.go(destination);
@@ -45,6 +49,11 @@ class AppScaffold extends StatelessWidget {
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
             label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.search_outlined),
+            selectedIcon: Icon(Icons.search),
+            label: 'Search',
           ),
           NavigationDestination(
             icon: Icon(Icons.grid_view_outlined),
@@ -62,6 +71,11 @@ class AppScaffold extends StatelessWidget {
             label: 'Cart',
           ),
           NavigationDestination(
+            icon: Icon(Icons.auto_awesome_outlined),
+            selectedIcon: Icon(Icons.auto_awesome),
+            label: 'AI',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
             label: 'Account',
@@ -71,3 +85,4 @@ class AppScaffold extends StatelessWidget {
     );
   }
 }
+

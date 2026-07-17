@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type {
+  AdminAnalytics,
   AdminCategory,
   AdminDashboard,
   AdminOrder,
@@ -188,6 +189,25 @@ export class SupabaseAdminRepository {
     return { ...withProfile, items: items ?? [], shippingAddress: order.shipping_address };
   }
 
+  async listCoupons() {
+    const { data, error } = await this.client
+      .from('coupons')
+      .select('*')
+      .order('created_at', { ascending: false });
+    throwOnError(error, 'coupons');
+    return data ?? [];
+  }
+
+  async getCoupon(id: string) {
+    const { data, error } = await this.client
+      .from('coupons')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    throwOnError(error, 'coupon');
+    return data;
+  }
+
   private async hydrateProducts(rows: ProductRow[]): Promise<AdminProduct[]> {
     if (rows.length === 0) return [];
     const productIds = rows.map((row) => row.id);
@@ -247,5 +267,104 @@ export class SupabaseAdminRepository {
       status: asOrderStatus(order.status),
       profileName: names.get(order.user_id) ?? null,
     }));
+  }
+
+  async getAnalytics(): Promise<AdminAnalytics> {
+    const [ordersResult, itemsResult, categoriesResult] = await Promise.all([
+      this.client
+        .from('orders')
+        .select('id, total, status, created_at')
+        .neq('status', 'cancelled')
+        .order('created_at', { ascending: true }),
+      this.client
+        .from('order_items')
+        .select('order_id, product_id, product_name, quantity, total_price'),
+      this.client.from('categories').select('id, name'),
+    ]);
+    throwOnError(ordersResult.error, 'analytics orders');
+    throwOnError(itemsResult.error, 'analytics items');
+    throwOnError(categoriesResult.error, 'analytics categories');
+
+    const orders = ordersResult.data ?? [];
+    const items = itemsResult.data ?? [];
+    const categories = categoriesResult.data ?? [];
+
+    // Summary metrics
+    const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+    const totalOrders = orders.length;
+    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const totalProductsSold = items.reduce((sum, i) => sum + i.quantity, 0);
+
+    // Revenue by day (last 30 days)
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const dayMap = new Map<string, { revenue: number; orders: number }>();
+    for (let d = new Date(thirtyDaysAgo); d <= now; d.setDate(d.getDate() + 1)) {
+      const key = d.toISOString().slice(0, 10);
+      dayMap.set(key, { revenue: 0, orders: 0 });
+    }
+    for (const order of orders) {
+      const key = order.created_at.slice(0, 10);
+      const entry = dayMap.get(key);
+      if (entry) {
+        entry.revenue += order.total;
+        entry.orders += 1;
+      }
+    }
+    const revenueByDay = Array.from(dayMap.entries()).map(([date, data]) => ({
+      date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      ...data,
+    }));
+
+    // Get product -> category mapping
+    const orderProductIds = Array.from(new Set(items.map((i) => i.product_id).filter((id): id is string => id != null)));
+    let productCategoryMap = new Map<string, string>();
+    if (orderProductIds.length > 0) {
+      const { data: products } = await this.client
+        .from('products')
+        .select('id, category_id')
+        .in('id', orderProductIds);
+      for (const p of products ?? []) {
+        if (p.category_id) productCategoryMap.set(p.id, p.category_id);
+      }
+    }
+    const categoryNameMap = new Map(categories.map((c) => [c.id, c.name]));
+
+    // Revenue by category
+    const catRevenue = new Map<string, { value: number; count: number }>();
+    for (const item of items) {
+      const catId = item.product_id ? productCategoryMap.get(item.product_id) : undefined;
+      const catName = catId ? (categoryNameMap.get(catId) ?? 'Uncategorized') : 'Uncategorized';
+      const entry = catRevenue.get(catName) ?? { value: 0, count: 0 };
+      entry.value += item.total_price;
+      entry.count += 1;
+      catRevenue.set(catName, entry);
+    }
+    const revenueByCategory = Array.from(catRevenue.entries())
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.value - a.value);
+
+    // Top products
+    const productRevenue = new Map<string, { quantity: number; revenue: number }>();
+    for (const item of items) {
+      const entry = productRevenue.get(item.product_name) ?? { quantity: 0, revenue: 0 };
+      entry.quantity += item.quantity;
+      entry.revenue += item.total_price;
+      productRevenue.set(item.product_name, entry);
+    }
+    const topProducts = Array.from(productRevenue.entries())
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 10);
+
+    return {
+      totalRevenue,
+      totalOrders,
+      avgOrderValue,
+      totalProductsSold,
+      revenueByDay,
+      revenueByCategory,
+      topProducts,
+    };
   }
 }

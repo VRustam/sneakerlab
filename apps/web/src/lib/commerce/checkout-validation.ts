@@ -13,6 +13,7 @@ export const checkoutSchema = z.object({
   postalCode: text('Postal code', 32),
   country: text('Country', 100),
   idempotencyKey: z.string().uuid('Please refresh the page and try checkout again.'),
+  couponCode: z.string().trim().max(50).optional(),
 });
 
 export type CheckoutFormValues = z.infer<typeof checkoutSchema>;
@@ -28,5 +29,6 @@ export function getCheckoutInput(formData: FormData) {
     postalCode: formData.get('postalCode'),
     country: formData.get('country'),
     idempotencyKey: formData.get('idempotencyKey'),
+    couponCode: formData.get('couponCode') || undefined,
   });
 }

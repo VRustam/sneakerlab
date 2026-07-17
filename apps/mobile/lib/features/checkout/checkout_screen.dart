@@ -14,13 +14,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _address = TextEditingController();
+  final _couponCode = TextEditingController();
   bool _loading = false;
   String? _message;
+  
   @override
   void dispose() {
     _name.dispose();
     _email.dispose();
     _address.dispose();
+    _couponCode.dispose();
     super.dispose();
   }
 
@@ -47,18 +50,24 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             },
             idempotencyKey:
                 '00000000-0000-4000-8000-${micro.toString().padLeft(12, '0')}',
+            couponCode: _couponCode.text.trim().isNotEmpty
+                ? _couponCode.text.trim().toUpperCase()
+                : null,
           );
       ref.invalidate(cartProvider);
       ref.invalidate(ordersProvider);
       if (mounted) {
         context.go('/orders/${order.number}');
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        setState(
-          () => _message =
-              'Demo checkout could not be completed. Your cart is still available to review.',
-        );
+        String displayError = 'Demo checkout could not be completed. Your cart is still available to review.';
+        if (e is PostgrestException) {
+          displayError = e.message;
+        } else if (e.toString().contains('Exception:')) {
+          displayError = e.toString().substring(e.toString().indexOf('Exception:') + 10).trim();
+        }
+        setState(() => _message = displayError);
       }
     } finally {
       if (mounted) {
@@ -102,6 +111,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             validator: (value) => value == null || value.trim().isEmpty
                 ? 'Enter your address.'
                 : null,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _couponCode,
+            decoration: const InputDecoration(
+              labelText: 'Promo code (optional)',
+              hintText: 'e.g. SAVE20',
+            ),
+            textCapitalization: TextCapitalization.characters,
           ),
           if (_message != null)
             Padding(

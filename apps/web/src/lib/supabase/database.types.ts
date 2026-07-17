@@ -15,6 +15,54 @@ type Table<Row, Insert, Update> = {
 export type Database = {
   public: {
     Tables: {
+      coupons: Table<
+        {
+          id: string;
+          code: string;
+          description: string | null;
+          discount_type: 'percentage' | 'fixed';
+          discount_value: number;
+          min_order_amount: number;
+          max_discount_amount: number | null;
+          max_uses: number | null;
+          current_uses: number;
+          starts_at: string | null;
+          expires_at: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        },
+        {
+          id?: string;
+          code: string;
+          description?: string | null;
+          discount_type: 'percentage' | 'fixed';
+          discount_value: number;
+          min_order_amount?: number;
+          max_discount_amount?: number | null;
+          max_uses?: number | null;
+          current_uses?: number;
+          starts_at?: string | null;
+          expires_at?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        },
+        {
+          code?: string;
+          description?: string | null;
+          discount_type?: 'percentage' | 'fixed';
+          discount_value?: number;
+          min_order_amount?: number;
+          max_discount_amount?: number | null;
+          max_uses?: number | null;
+          current_uses?: number;
+          starts_at?: string | null;
+          expires_at?: string | null;
+          is_active?: boolean;
+          updated_at?: string;
+        }
+      >;
       profiles: Table<
         {
           id: string;
@@ -275,10 +323,18 @@ export type Database = {
           p_shipping_address: Json;
           p_shipping_cost?: number;
           p_idempotency_key?: string;
+          p_coupon_code?: string;
         };
         Returns: string;
       };
       is_admin: { Args: Record<never, never>; Returns: boolean };
+      validate_coupon: {
+        Args: {
+          coupon_code: string;
+          order_subtotal: number;
+        };
+        Returns: Json;
+      };
     };
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ChatAgent } from '@/components/chat-agent';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import './globals.css';
@@ -24,7 +25,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
+        <ChatAgent />
       </body>
     </html>
   );
 }
+

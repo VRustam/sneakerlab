@@ -40,6 +40,7 @@ export async function checkoutAction(formData: FormData): Promise<CheckoutAction
         country: parsed.data.country,
       },
       idempotencyKey: parsed.data.idempotencyKey,
+      couponCode: parsed.data.couponCode,
     });
     revalidatePath('/cart');
     revalidatePath('/orders');

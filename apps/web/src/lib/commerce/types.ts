@@ -82,6 +82,7 @@ export interface CheckoutInput {
   customerEmail: string;
   shippingAddress: ShippingAddress;
   idempotencyKey: string;
+  couponCode?: string;
 }
 
 export interface OrderItemSnapshot {

@@ -10,11 +10,20 @@ import { Input } from '@/components/ui/input';
 import { formatPrice } from '@/lib/catalog/catalog-format';
 import { checkoutSchema, type CheckoutFormValues } from '@/lib/commerce/checkout-validation';
 
+import { getSupabaseBrowserClient } from '@/lib/supabase/browser';
+
 interface CheckoutFormProps {
   defaultValues: Pick<CheckoutFormValues, 'customerName' | 'customerEmail'>;
   idempotencyKey: string;
   itemCount: number;
   subtotal: number;
+}
+
+interface AppliedCouponInfo {
+  code: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+  discount_amount: number;
 }
 
 export function CheckoutForm({
@@ -25,7 +34,14 @@ export function CheckoutForm({
 }: CheckoutFormProps) {
   const [isPending, startTransition] = useTransition();
   const [submissionError, setSubmissionError] = useState<string>();
-  const { formState, handleSubmit, register } = useForm<CheckoutFormValues>({
+  
+  // Coupon states
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCouponInfo | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [isCheckingCoupon, setIsCheckingCoupon] = useState(false);
+
+  const { formState, handleSubmit, register, setValue } = useForm<CheckoutFormValues>({
     defaultValues: {
       ...defaultValues,
       addressLine1: '',
@@ -35,10 +51,70 @@ export function CheckoutForm({
       postalCode: '',
       country: '',
       idempotencyKey,
+      couponCode: '',
     },
     resolver: zodResolver(checkoutSchema) as Resolver<CheckoutFormValues>,
   });
   const { errors } = formState;
+
+  const handleApplyCoupon = async () => {
+    setCouponError(null);
+    if (!couponInput.trim()) return;
+
+    setIsCheckingCoupon(true);
+    try {
+      const client = getSupabaseBrowserClient();
+      if (!client) {
+        setCouponError('Billing service is currently unavailable.');
+        return;
+      }
+
+      const { data, error } = await client.rpc('validate_coupon', {
+        coupon_code: couponInput.trim(),
+        order_subtotal: subtotal,
+      });
+
+      if (error) {
+        setCouponError('Failed to validate coupon.');
+        return;
+      }
+
+      const result = data as {
+        valid: boolean;
+        error?: string;
+        code: string;
+        discount_type: 'percentage' | 'fixed';
+        discount_value: number;
+        discount_amount: number;
+      };
+
+      if (!result.valid) {
+        setCouponError(result.error ?? 'Invalid coupon code.');
+      } else {
+        setAppliedCoupon({
+          code: result.code,
+          discount_type: result.discount_type,
+          discount_value: result.discount_value,
+          discount_amount: result.discount_amount,
+        });
+        setValue('couponCode', result.code);
+        setCouponInput('');
+      }
+    } catch {
+      setCouponError('An unexpected error occurred.');
+    } finally {
+      setIsCheckingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setValue('couponCode', '');
+    setCouponError(null);
+  };
+
+  const discountAmount = appliedCoupon?.discount_amount ?? 0;
+  const finalTotal = Math.max(0, subtotal - discountAmount);
 
   function onSubmit(values: CheckoutFormValues) {
     setSubmissionError(undefined);
@@ -121,7 +197,47 @@ export function CheckoutForm({
             register={register}
           />
         </div>
+
+        {/* Promo code field */}
+        <div className="border-t border-border pt-6 mt-6 space-y-3">
+          <h3 className="text-base font-bold">Promo code</h3>
+          <div className="flex gap-2">
+            <Input
+              id="coupon-code-input"
+              placeholder="e.g. SAVE20"
+              value={couponInput}
+              onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+              disabled={isCheckingCoupon || !!appliedCoupon}
+              className="max-w-[200px]"
+            />
+            {appliedCoupon ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleRemoveCoupon}
+              >
+                Remove
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                disabled={isCheckingCoupon || !couponInput.trim()}
+                onClick={handleApplyCoupon}
+              >
+                {isCheckingCoupon ? 'Applying...' : 'Apply'}
+              </Button>
+            )}
+          </div>
+          {couponError && <p className="text-sm text-destructive" role="alert">{couponError}</p>}
+          {appliedCoupon && (
+            <p className="text-sm text-green-400 font-semibold">
+              Coupon &ldquo;{appliedCoupon.code}&rdquo; applied! Discount: {formatPrice(discountAmount)}
+            </p>
+          )}
+        </div>
+
         <input type="hidden" {...register('idempotencyKey')} />
+        <input type="hidden" {...register('couponCode')} />
         {submissionError ? (
           <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive" role="alert">
             {submissionError}
@@ -138,13 +254,19 @@ export function CheckoutForm({
             <span>Subtotal</span>
             <span>{formatPrice(subtotal)}</span>
           </p>
+          {discountAmount > 0 && (
+            <p className="flex justify-between text-green-400">
+              <span>Discount ({appliedCoupon?.code})</span>
+              <span>-{formatPrice(discountAmount)}</span>
+            </p>
+          )}
           <p className="flex justify-between">
             <span>Demo shipping</span>
             <span>Free</span>
           </p>
           <p className="flex justify-between text-base font-bold">
             <span>Total</span>
-            <span>{formatPrice(subtotal)}</span>
+            <span>{formatPrice(finalTotal)}</span>
           </p>
         </div>
         <Button className="w-full" disabled={isPending} size="lg" type="submit">

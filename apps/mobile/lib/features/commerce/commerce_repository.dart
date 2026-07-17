@@ -18,6 +18,7 @@ abstract class CommerceRepository {
     required String email,
     required Map<String, String> address,
     required String idempotencyKey,
+    String? couponCode,
   });
   Future<List<CustomerOrder>> orders();
   Future<CustomerOrder?> orderByNumber(String number);
@@ -262,6 +263,7 @@ class SupabaseCommerceRepository implements CommerceRepository {
     required String email,
     required Map<String, String> address,
     required String idempotencyKey,
+    String? couponCode,
   }) async {
     final orderId =
         await _client.rpc(
@@ -272,6 +274,8 @@ class SupabaseCommerceRepository implements CommerceRepository {
                 'p_shipping_address': address,
                 'p_shipping_cost': 0,
                 'p_idempotency_key': idempotencyKey,
+                if (couponCode != null && couponCode.isNotEmpty)
+                  'p_coupon_code': couponCode,
               },
             )
             as String;
@@ -409,6 +413,7 @@ class UnavailableCommerceRepository implements CommerceRepository {
     required String email,
     required Map<String, String> address,
     required String idempotencyKey,
+    String? couponCode,
   }) async => _unavailable();
 
   @override

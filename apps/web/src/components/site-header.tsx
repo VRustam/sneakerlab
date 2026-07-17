@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { MobileNavigation } from '@/components/mobile-navigation';
 import { PageContainer } from '@/components/page-container';
+import { SearchDialog } from '@/components/search-dialog';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -21,6 +22,9 @@ export function SiteHeader() {
         >
           SneakerLab
         </Link>
+        <div className="hidden md:block">
+          <SearchDialog />
+        </div>
         <nav aria-label="Primary navigation" className="hidden items-center gap-6 md:flex">
           {navigation.map((item) => (
             <Link
@@ -40,3 +44,4 @@ export function SiteHeader() {
     </header>
   );
 }
+

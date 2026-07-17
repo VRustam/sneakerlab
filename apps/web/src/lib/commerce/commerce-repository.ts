@@ -158,6 +158,7 @@ export class SupabaseCommerceRepository {
       p_shipping_address: input.shippingAddress as unknown as Json,
       p_shipping_cost: 0,
       p_idempotency_key: input.idempotencyKey,
+      p_coupon_code: input.couponCode,
     });
     if (error || !orderId) throw new CommerceDataError(this.getCheckoutErrorCode(error?.message));
 
