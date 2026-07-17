@@ -134,7 +134,7 @@ create index cart_items_user_idx on public.cart_items (user_id, updated_at desc)
 create index orders_user_created_idx on public.orders (user_id, created_at desc);
 create index orders_status_created_idx on public.orders (status, created_at desc);
 create index order_items_order_idx on public.order_items (order_id);
-create function public.set_updated_at()
+create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
 set search_path = public
@@ -145,7 +145,7 @@ begin
 end;
 $$;
 
-create function public.handle_new_user()
+create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer
@@ -159,7 +159,7 @@ begin
 end;
 $$;
 
-create function public.is_admin()
+create or replace function public.is_admin()
 returns boolean
 language sql
 stable
@@ -173,7 +173,7 @@ as $$
   );
 $$;
 
-create function public.prevent_profile_role_change()
+create or replace function public.prevent_profile_role_change()
 returns trigger
 language plpgsql
 security definer
@@ -189,7 +189,7 @@ begin
 end;
 $$;
 
-create function public.next_order_number()
+create or replace function public.next_order_number()
 returns text
 language plpgsql
 security definer
@@ -206,7 +206,7 @@ begin
 end;
 $$;
 
-create function public.is_valid_order_status_transition(current_status text, next_status text)
+create or replace function public.is_valid_order_status_transition(current_status text, next_status text)
 returns boolean
 language sql
 immutable
@@ -217,7 +217,7 @@ as $$
     or (current_status = 'shipped' and next_status = 'delivered');
 $$;
 
-create function public.enforce_order_status_transition()
+create or replace function public.enforce_order_status_transition()
 returns trigger
 language plpgsql
 set search_path = public
@@ -230,7 +230,7 @@ begin
 end;
 $$;
 
-create function public.validate_cart_item_variant()
+create or replace function public.validate_cart_item_variant()
 returns trigger
 language plpgsql
 set search_path = public
@@ -247,7 +247,7 @@ begin
 end;
 $$;
 
-create function public.enforce_order_immutable_fields()
+create or replace function public.enforce_order_immutable_fields()
 returns trigger
 language plpgsql
 set search_path = public
@@ -260,7 +260,7 @@ begin
 end;
 $$;
 
-create function public.create_order_from_cart(
+create or replace function public.create_order_from_cart(
   p_customer_name text,
   p_customer_email text,
   p_shipping_address jsonb,
@@ -656,7 +656,7 @@ create unique index orders_user_idempotency_key_idx
 
 drop function if exists public.create_order_from_cart(text, text, jsonb, numeric);
 
-create function public.create_order_from_cart(
+create or replace function public.create_order_from_cart(
   p_customer_name text,
   p_customer_email text,
   p_shipping_address jsonb,
